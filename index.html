@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ru" class="no-script">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#faf9f6">
+  <meta name="description" content="Выберите гранитный памятник, сравните породы камня и посмотрите оформление участка в 3D.">
+  <title>Гранитная мастерская — памятники и благоустройство</title>
+  <link rel="icon" href="data:,">
+  <link rel="preload" as="font" href="./home-assets/spectral-cyrillic.woff2" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="./home-assets/fonts.css">
+  <link rel="stylesheet" href="./homepage.css">
+  <script type="module" src="./homepage.js"></script>
+</head>
+<body id="top">
+<a class="skip" href="#main">К содержанию</a>
+<header class="mast">
+  <div class="mast-inner shell">
+    <a class="wordmark" href="#top" aria-label="Гранитная мастерская, на главную"><span class="sign" aria-hidden="true"><i></i><i></i></span><span>Гранитная мастерская</span></a>
+    <button class="search-launch needs-js" type="button" aria-haspopup="dialog" aria-controls="catalog-search"><span class="magnifier" aria-hidden="true"></span><span>Поиск по каталогу</span></button>
+    <div class="mast-actions">
+      <button class="search-mobile needs-js" type="button" aria-label="Поиск по каталогу" aria-haspopup="dialog" aria-controls="catalog-search"><span class="magnifier" aria-hidden="true"></span></button>
+      <a class="saved-link needs-js" href="#saved" aria-label="Избранное"><span class="bookmark" aria-hidden="true"></span><span class="saved-label">Избранное</span><span id="saved-count" hidden>0</span></a>
+      <a class="button solid header-3d" href="./constructor/?section=plot"><span>3D-конструктор</span></a>
+      <button id="menu-toggle" class="menu-toggle needs-js" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="compact-menu"><span></span><span></span></button>
+    </div>
+  </div>
+  <nav class="catalog-strip" aria-label="Каталог и разделы сайта"><div class="shell strip-inner">
+    <a href="#catalog">Памятники</a><a href="#ideas">Готовые компоновки</a><a href="#flowerbeds">Плиты и цветники</a>
+    <a href="#fences">Ограды</a><a href="#accessories">Аксессуары</a><a href="#materials">Гранит</a><a href="#guide">Помощь в выборе</a>
+  </div></nav>
+  <nav id="compact-menu" hidden aria-label="Разделы сайта">
+    <a href="#catalog">Памятники</a><a href="#ideas">Готовые компоновки</a><a href="#flowerbeds">Плиты и цветники</a><a href="#fences">Ограды</a>
+    <a href="#accessories">Аксессуары</a><a href="#materials">Гранит</a><a href="#guide">Помощь в выборе</a><a href="#saved">Избранное</a>
+  </nav>
+</header>
+<dialog id="catalog-search" class="search-dialog" aria-labelledby="search-title">
+  <div class="search-heading"><h2 id="search-title">Поиск по каталогу</h2><button type="button" class="close-search" aria-label="Закрыть поиск">Закрыть</button></div>
+  <div class="query-line"><span class="magnifier" aria-hidden="true"></span><input id="catalog-query" type="search" aria-label="Название изделия, материал или оформление" placeholder="Например, кованая ограда" autocomplete="off" spellcheck="false"></div>
+  <p id="search-message" aria-live="polite"></p><ul id="search-results"></ul>
+</dialog>
+<main id="main">
+  <div class="feature-grid shell">
+  <section class="hero" aria-labelledby="intro">
+    <div class="hero-media">
+      <picture>
+        <img src="./home-assets/hero.webp" width="1902" height="827" fetchpriority="high" alt="Визуализация парного гранитного памятника с рифлёным стеклянным крестом в саду">
+      </picture>
+    </div>
+    <div class="hero-copy">
+      <h1 id="intro">Памятники<br> из&nbsp;гранита</h1>
+      <p>Одиночные и семейные памятники. Подберите форму, камень и оформление в 3D.</p>
+      <div class="hero-actions">
+        <a class="button light hero-cta" href="#catalog">Смотреть каталог <span class="arrow" aria-hidden="true"></span></a>
+        <a class="hero-project" href="./constructor/?section=monument&amp;view=angle"><span class="photo-link-arrow" aria-hidden="true"><i class="arrow"></i></span><span class="desktop-project-label">Парный памятник в 3D</span><span class="mobile-project-label">Модель в 3D</span></a>
+      </div>
+    </div>
+  </section>
+    <div class="feature-stories">
+      <a class="feature-story" href="#components"><img src="./home-assets/feature-plot.webp" alt="" width="700" height="360"><span>Оформление участка</span><i class="story-arrow" aria-hidden="true"></i></a>
+      <a class="feature-story" href="./constructor/?section=monument&amp;view=angle&amp;edit=inscription" data-search-title="Портреты и надписи" data-search-group="Оформление" data-search-words="гравировка персонализация фотография ФИО дата"><img src="./home-assets/feature-engraving.webp" alt="" width="700" height="360"><span>Портреты и надписи</span><i class="story-arrow" aria-hidden="true"></i></a>
+    </div>
+  </div>
+  <section class="catalog shell" id="catalog" aria-labelledby="catalog-title">
+    <span class="anchor-target" id="saved"></span>
+    <div class="section-head">
+      <h2 id="catalog-title">Каталог памятников</h2>
+      <span id="catalog-total" class="result-count">6 проектов</span>
+      <a id="back-catalog" class="underlink" href="#catalog" hidden>Весь каталог</a>
+    </div>
+    <div class="projects">
+      <article class="project" data-project="single">
+        <a class="project-link" href="./single/" aria-labelledby="single-title">
+          <div class="project-image"><img src="./home-assets/catalog-single.webp" width="1080" height="564" alt="Одиночный памятник с колоннами, аркой и православным крестом"></div>
+          <div class="project-caption"><div><h3 id="single-title">Одиночный памятник</h3><p>Арка с колоннами и одним портретом</p></div><span class="round-arrow" aria-hidden="true"><i class="arrow"></i></span></div>
+        </a><button type="button" class="save-project needs-js" aria-pressed="false" aria-label="В избранное: одиночный памятник"><span class="bookmark"></span></button>
+      </article>
+      <article class="project" data-project="pair">
+        <a class="project-link" href="./constructor/?section=monument&amp;view=angle&amp;model=classic" aria-labelledby="pair-title">
+          <div class="project-image"><img src="./home-assets/catalog-pair.webp" width="1080" height="564" alt="Две гранитные стелы со стеклянным крестом между ними"></div>
+          <div class="project-caption"><div><h3 id="pair-title">Парный памятник</h3><p>Две стелы на общем основании</p></div><span class="round-arrow" aria-hidden="true"><i class="arrow"></i></span></div>
+        </a><button type="button" class="save-project needs-js" aria-pressed="false" aria-label="В избранное: парный памятник"><span class="bookmark"></span></button>
+      </article>
+      <article class="project" data-project="plot">
+        <a class="project-link" href="./constructor/?section=plot&amp;view=plot" aria-labelledby="plot-title">
+          <div class="project-image"><img src="./home-assets/catalog-plot.webp" width="1080" height="564" alt="Участок с памятником, надгробной плитой, цветником и кованой оградой"></div>
+          <div class="project-caption"><div><h3 id="plot-title">Мемориальный комплекс</h3><p>Памятник с оформлением участка</p></div><span class="round-arrow" aria-hidden="true"><i class="arrow"></i></span></div>
+        </a><button type="button" class="save-project needs-js" aria-pressed="false" aria-label="В избранное: мемориальный комплекс"><span class="bookmark"></span></button>
+      </article>
+      <article class="project" data-project="b05">
+        <a class="project-link" href="./constructor/?section=monument&amp;view=angle&amp;model=b05&amp;fence=fence-stone-plinth" aria-labelledby="b05-title">
+          <div class="project-image"><img src="./home-assets/catalog-b05.webp" width="1080" height="564" loading="lazy" alt="Две волны на горизонтальной стеле"></div>
+          <div class="project-caption"><div><h3 id="b05-title">Двойная волна</h3><p>Парный памятник · B-05</p></div><span class="round-arrow" aria-hidden="true"><i class="arrow"></i></span></div>
+        </a><button type="button" class="save-project needs-js" aria-pressed="false" aria-label="В избранное: двойная волна"><span class="bookmark"></span></button>
+      </article>
+      <article class="project" data-project="b20">
+        <a class="project-link" href="./constructor/?section=monument&amp;view=angle&amp;model=b20&amp;fence=fence-stone-wave" aria-labelledby="b20-title">
+          <div class="project-image"><img src="./home-assets/catalog-b20.webp" width="1080" height="564" loading="lazy" alt="Общая стела с арочным завершением"></div>
+          <div class="project-caption"><div><h3 id="b20-title">Фигурная арка</h3><p>Парный памятник · B-20</p></div><span class="round-arrow" aria-hidden="true"><i class="arrow"></i></span></div>
+        </a><button type="button" class="save-project needs-js" aria-pressed="false" aria-label="В избранное: фигурная арка"><span class="bookmark"></span></button>
+      </article>
+      <article class="project" data-project="b37">
+        <a class="project-link" href="./constructor/?section=monument&amp;view=angle&amp;model=b37&amp;fence=fence-stone-baluster" aria-labelledby="b37-title">
+          <div class="project-image"><img src="./home-assets/catalog-b37.webp" width="1080" height="564" loading="lazy" alt="Рельефный крест сбоку от двух портретов"></div>
+          <div class="project-caption"><div><h3 id="b37-title">Боковой крест</h3><p>Парный памятник · B-37</p></div><span class="round-arrow" aria-hidden="true"><i class="arrow"></i></span></div>
+        </a><button type="button" class="save-project needs-js" aria-pressed="false" aria-label="В избранное: боковой крест"><span class="bookmark"></span></button>
+      </article>
+    </div>
+    <p class="empty" id="empty-saved" hidden>Здесь появятся проекты, которые вы отметите закладкой в каталоге.</p>
+    <p class="sr-only" id="save-status" aria-live="polite"></p>
+  </section>
+<section class="piece-catalog shell" id="components" aria-labelledby="parts-title">
+  <span class="piece-anchor" id="components-all" aria-hidden="true"></span>
+  <span class="piece-anchor" id="flowerbeds" aria-hidden="true"></span>
+  <span class="piece-anchor" id="fences" aria-hidden="true"></span>
+  <span class="piece-anchor" id="accessories" aria-hidden="true"></span>
+  <div class="pieces-heading">
+    <h2 id="parts-title">Для обустройства участка</h2>
+    <nav class="piece-filters" aria-label="Категории изделий" hidden>
+      <a href="#components-all" data-piece-filter="all">Все</a>
+      <a href="#flowerbeds" data-piece-filter="flowerbeds">Цветники и плиты</a>
+      <a href="#fences" data-piece-filter="fences">Ограды</a>
+      <a href="#accessories" data-piece-filter="accessories">Аксессуары</a>
+    </nav>
+  </div>
+  <span id="piece-description" class="sr-only">Открыть изделие в 3D-конструкторе.</span>
+  <span class="sr-only" id="piece-result" aria-live="polite"></span>
+  <ul class="piece-grid" id="piece-list">
+    <li data-piece-category="flowerbeds" data-piece-featured>
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=planting&amp;piece=flower-rect&amp;bedFill=marble"
+         data-search-title="Прямой цветник" data-search-group="Для участка" data-search-words="прямоугольный гранитный цветник бордюр мраморная крошка отсыпка"
+         aria-labelledby="piece-flower-rect-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-flower-rect.webp" width="600" height="400" loading="lazy" decoding="async" alt="Прямоугольный гранитный цветник с мраморной крошкой"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-flower-rect-title">Прямой цветник</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+    <li data-piece-category="flowerbeds" data-piece-featured>
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=plot&amp;piece=slab-solid"
+         data-search-title="Сплошная плита" data-search-group="Для участка" data-search-words="целая надгробная гранитная плита надгробие"
+         aria-labelledby="piece-slab-solid-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-slab-solid.webp" width="600" height="400" loading="lazy" decoding="async" alt="Цельная полированная надгробная плита с фаской"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-slab-solid-title">Сплошная плита</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+    <li data-piece-category="fences" data-piece-featured>
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=plot&amp;piece=fence-forged"
+         data-search-title="Кованая ограда" data-search-group="Для участка" data-search-words="ковка кованая оградка ограда ограждение забор решётка металл"
+         aria-labelledby="piece-fence-forged-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-fence-forged.webp" width="600" height="400" loading="lazy" decoding="async" alt="Пролёт кованой ограды с парными изгибами и фигурными столбами"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-fence-forged-title">Кованая ограда</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+    <li data-piece-category="accessories" data-piece-featured>
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=plot&amp;piece=vase"
+         data-search-title="Гранитная ваза" data-search-group="Для участка" data-search-words="ваза для цветов гранит аксессуары"
+         aria-labelledby="piece-vase-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-vase.webp" width="600" height="400" loading="lazy" decoding="async" alt="Точёная гранитная ваза на узкой ножке"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-vase-title">Гранитная ваза</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+    <li data-piece-category="flowerbeds">
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=planting&amp;piece=flower-round&amp;bedFill=grass"
+         data-search-title="Скруглённый цветник" data-search-group="Для участка" data-search-words="округлый круглый полукруглый цветник бордюр живая трава газон"
+         aria-labelledby="piece-flower-round-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-flower-round.webp" width="600" height="400" loading="lazy" decoding="async" alt="Цветник с закруглённым краем и живым газоном"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-flower-round-title">Скруглённый цветник</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+    <li data-piece-category="flowerbeds">
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=plot&amp;piece=slab-half"
+         data-search-title="Половинная плита" data-search-group="Для участка" data-search-words="полуплита половина половинчатая короткая надгробная плита"
+         aria-labelledby="piece-slab-half-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-slab-half.webp" width="600" height="400" loading="lazy" decoding="async" alt="Короткая надгробная плита из полированного гранита"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-slab-half-title">Половинная плита</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+    <li data-piece-category="fences">
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=plot&amp;piece=fence-simple"
+         data-search-title="Простая ограда" data-search-group="Для участка" data-search-words="металл металлическая оградка ограда прямая ограждение забор решётка"
+         aria-labelledby="piece-fence-simple-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-fence-simple.webp" width="600" height="400" loading="lazy" decoding="async" alt="Прямой пролёт металлической ограды с двумя опорными столбами"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-fence-simple-title">Простая ограда</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+    <li data-piece-category="accessories">
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=plot&amp;piece=bench"
+         data-search-title="Гранитная скамейка" data-search-group="Для участка" data-search-words="скамья лавка лавочка сиденье скамейка гранит"
+         aria-labelledby="piece-bench-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-bench.webp" width="600" height="400" loading="lazy" decoding="async" alt="Скамейка с гранитным сиденьем на двух опорах"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-bench-title">Гранитная скамейка</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+    <li data-piece-category="fences">
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=plot&amp;fence=fence-stone-plinth" data-search-title="Прямой гранитный цоколь" data-search-group="Для участка" data-search-words="каменная гранитная оградка ограда забор периметр низкая прямая стенка из полированного гранита с плоскими столбиками" aria-labelledby="piece-fence-stone-plinth-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-fence-stone-plinth.webp" width="600" height="400" loading="lazy" decoding="async" alt="Низкая прямая стенка из полированного гранита с плоскими столбиками"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-fence-stone-plinth-title">Прямой гранитный цоколь</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+    <li data-piece-category="fences">
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=plot&amp;fence=fence-stone-wave" data-search-title="Волнистая ограда" data-search-group="Для участка" data-search-words="каменная гранитная оградка ограда забор периметр профиль волны между каменными столбиками" aria-labelledby="piece-fence-stone-wave-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-fence-stone-wave.webp" width="600" height="400" loading="lazy" decoding="async" alt="Профиль волны между каменными столбиками"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-fence-stone-wave-title">Волнистая ограда</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+    <li data-piece-category="fences">
+      <a class="piece-link" href="./constructor/?section=plot&amp;view=plot&amp;fence=fence-stone-baluster" data-search-title="Ограда с шарами" data-search-group="Для участка" data-search-words="каменная гранитная оградка ограда забор периметр полированные шары на точёных гранитных столбах" aria-labelledby="piece-fence-stone-baluster-title" aria-describedby="piece-description">
+        <span class="piece-media"><img src="./home-assets/piece-fence-stone-baluster.webp" width="600" height="400" loading="lazy" decoding="async" alt="Полированные шары на точёных гранитных столбах"></span>
+        <span class="piece-caption"><span class="piece-name" id="piece-fence-stone-baluster-title">Ограда с шарами</span><span class="piece-3d" aria-hidden="true">3D <i></i></span></span>
+      </a>
+    </li>
+  </ul>
+  <div class="piece-bottom" hidden>
+    <button type="button" class="piece-expand" aria-controls="piece-list" aria-expanded="false"><span>Все 11 изделий</span><i aria-hidden="true"></i></button>
+  </div>
+</section>
+
+  <section id="ideas" class="ideas shell" aria-labelledby="ideas-title">
+    <div class="section-head"><h2 id="ideas-title">Готовые компоновки</h2></div>
+    <div class="idea-layout">
+      <div class="idea-photo-stage"><img id="idea-photo" src="./home-assets/preset-family.webp" width="900" height="630" alt="Парный памятник, цветник и плита внутри кованой ограды" loading="lazy"></div>
+      <div class="idea-notes">
+        <div class="idea-tabs needs-js" aria-label="Варианты компоновки" role="group">
+          <button class="idea-choice" type="button" aria-pressed="true" data-idea="family">Семейный участок</button>
+          <button class="idea-choice" type="button" aria-pressed="false" data-idea="garden">Два цветника</button>
+          <button class="idea-choice" type="button" aria-pressed="false" data-idea="paving">Участок с мощением</button>
+        </div>
+        <noscript><p><a class="underlink" href="./constructor/?section=plot&amp;view=plot&amp;preset=garden">Два цветника</a> · <a class="underlink" href="./constructor/?section=plot&amp;view=plot&amp;preset=paving">Участок с мощением</a></p></noscript>
+        <div id="idea-description" aria-live="polite"><h3 id="idea-name">Семейный участок</h3>
+          <p id="idea-intro">Цветник и гранитная плита у общего памятника. Кованая ограда очерчивает границы участка.</p>
+          <dl class="idea-spec"><div><dt>Размер</dt><dd id="idea-size">2,8 × 3,2 м</dd></div><div><dt>Покрытие</dt><dd id="idea-surface">Чёрный гранит</dd></div><div><dt>Вход</dt><dd id="idea-entry">Справа, с калиткой</dd></div></dl>
+        </div>
+        <a class="button solid" id="idea-open" href="./constructor/?section=plot&amp;view=plot&amp;preset=family">Открыть компоновку в 3D <span class="arrow" aria-hidden="true"></span></a>
+      </div>
+    </div>
+  </section>
+  <section class="stones shell" id="materials" aria-labelledby="stones-title">
+    <div class="stones-intro">
+      <h2 id="stones-title">Камень и фактура</h2>
+      <p>Сравните рисунок камня и примерьте выбранный оттенок на памятнике.</p>
+    </div>
+    <fieldset class="samples"><legend class="sr-only">Выберите камень для примерки</legend>
+      <label><input type="radio" name="stone" value="black" checked><span class="specimen"><img loading="lazy" src="./home-assets/sample-black.webp" width="380" height="265" alt=""></span><span>Чёрный габбро</span></label>
+      <label><input type="radio" name="stone" value="gray"><span class="specimen"><img loading="lazy" src="./home-assets/sample-gray.webp" width="380" height="265" alt=""></span><span>Серый гранит</span></label>
+      <label><input type="radio" name="stone" value="red"><span class="specimen"><img loading="lazy" src="./home-assets/sample-red.webp" width="380" height="265" alt=""></span><span>Красный гранит</span></label>
+      <label><input type="radio" name="stone" value="green"><span class="specimen"><img loading="lazy" src="./home-assets/sample-green.webp" width="380" height="265" alt=""></span><span>Зелёный гранит</span></label>
+    </fieldset>
+      <a id="stone-link" class="underlink" href="./constructor/?section=monument&amp;stone=black&amp;view=angle">Примерить в 3D <span class="arrow" aria-hidden="true"></span></a>
+  </section>
+  <section class="plan shell" id="plot" aria-labelledby="plan-heading">
+    <div class="plan-copy">
+      <h2 id="plan-heading">Благоустройство участка</h2>
+      <p>Разместите плиту, цветник и ограду вокруг памятника. Проверьте на плане, где останется проход и как откроется калитка.</p>
+      <fieldset class="sizes"><legend>Размер участка</legend>
+        <label><input type="radio" name="plot-size" value="standard"><span>2,4 × 3,0 м</span></label>
+        <label><input type="radio" name="plot-size" value="wide" checked><span>2,8 × 3,2 м</span></label>
+        <label><input type="radio" name="plot-size" value="large"><span>3,2 × 3,6 м</span></label>
+      </fieldset>
+      <a id="plan-link" class="button solid" href="./constructor/?section=plot&amp;view=top&amp;size=wide">Открыть план участка <span class="arrow" aria-hidden="true"></span></a>
+    </div>
+    <div class="plan-drawing"><canvas width="760" height="425" id="plot-sketch" aria-label="План участка 2,8 на 3,2 метра, цветник слева, плита справа, калитка спереди"></canvas></div>
+  </section>
+  <section class="advice shell" id="guide" aria-labelledby="guide-title">
+    <div class="section-head"><h2 id="guide-title">Помощь в выборе</h2></div>
+    <div class="guide-list">
+      <article id="guide-measure"><h3>Как снять размеры</h3><p>Измерьте участок в двух направлениях. Отметьте вход, существующие плиты и свободный проход. Занесите размеры в лист замера.</p><a href="./home-assets/plot-measurement.pdf" download="Лист замера участка.pdf" class="underlink" data-search-title="Лист замера участка" data-search-group="Материалы для скачивания" data-search-words="замер ширина длина бланк распечатать">Скачать лист замера <small>PDF</small></a></article>
+      <article id="guide-photo"><h3>Как выбрать портрет</h3><p>Возьмите исходное фото с чёткими чертами лица. Примерьте его в рамке и проверьте кадр крупным планом. Для каждой стелы можно выбрать своё фото.</p><a href="./constructor/?section=monument&amp;view=angle&amp;edit=photo" class="underlink" data-search-title="Примерить фотографию на памятнике" data-search-group="Оформление" data-search-words="портрет рамка фото загрузить гравировка">Примерить фотографию <span class="arrow" aria-hidden="true"></span></a></article>
+      <article id="guide-slab"><h3>Плита или цветник</h3><p>Плита закрывает место захоронения. Для цветника выберите живой газон или мраморную крошку. Обе стороны парного памятника можно оформить по-разному.</p><a href="./constructor/?section=plot&amp;view=planting&amp;bedFill=marble" class="underlink" data-search-title="Выбрать наполнение цветника" data-search-group="Благоустройство" data-search-words="трава газон мраморная крошка отсыпка">Выбрать наполнение в 3D <span class="arrow" aria-hidden="true"></span></a></article>
+    </div>
+  </section>
+  <section class="questions shell" id="questions" aria-labelledby="faq-heading">
+    <h2 id="faq-heading">Вопросы о проекте</h2>
+    <div class="answers">
+      <details><summary>Можно ли добавить свой портрет и надписи?</summary><p>Да. Откройте парный памятник и выберите левую или правую стелу. Для каждой можно загрузить своё фото и изменить имя, отчество, фамилию и даты.</p></details>
+      <details><summary>Как проверить проход от калитки?</summary><p>В конструкторе выберите вид «Сверху». На вкладке «Участок» укажите положение входа и включите «Открыть калитку». На плане видно, куда отходит створка и как рядом расположены плиты и скамейка. <a href="./constructor/?section=plot&amp;view=walk&amp;environment=cemetery">Прогуляться по аллее и обойти памятник</a> можно с высоты человеческого роста.</p></details>
+      <details><summary>Где сохранится моя подборка?</summary><p>Избранные модели и настройки конструктора хранятся в этом браузере. На том же устройстве можно вернуться к проекту и продолжить редактирование.</p></details>
+    </div>
+  </section>
+</main>
+<footer><div class="shell rich-footer">
+  <div class="foot-brand"><a class="foot-name" href="#top">Гранитная мастерская</a><p>Памятники и благоустройство участков</p></div>
+  <nav aria-label="Каталог в подвале"><strong>Каталог</strong><a href="#catalog">Памятники</a><a href="#flowerbeds">Плиты и цветники</a><a href="#fences">Ограды</a><a href="#accessories">Аксессуары</a></nav>
+  <nav aria-label="Проект в подвале"><strong>Ваш проект</strong><a href="#ideas">Готовые компоновки</a><a href="#materials">Выбор гранита</a><a href="./constructor/?section=plot">3D-конструктор</a></nav>
+  <nav aria-label="Помощь в подвале"><strong>Помощь</strong><a href="#guide">Подготовка к выбору</a><a href="#questions">Вопросы о проекте</a><a href="#top">Наверх</a></nav>
+</div></footer>
+</body></html>
