@@ -294,4 +294,10 @@ body.walking #scene canvas:focus-visible {outline:none}
 .model-choices span { font-size:.82rem; font-weight:550; line-height:1.16; }
 .model-choices small { display:block; margin-top:4px; color:var(--muted); font-size:.68rem; font-weight:450; }
 .model-reference { display:inline-block; margin-top:9px; color:var(--olive); font-size:.76rem; text-underline-offset:3px; }
+.width-setting { margin:10px 0 0; padding:0; border:0; min-width:0; }
+.width-setting legend { padding:0 0 5px; font-size:.81rem; }
+.width-setting .plot-choices { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.width-setting small { display:block; margin-top:2px; font-size:.7rem; color:var(--muted); }
+.width-setting p { margin:6px 0 0; font-size:.74rem; line-height:1.4; color:var(--muted); }
+.width-setting p:empty { display:none; }
 @media (hover:hover) { .model-choices button:hover { border-color:#8f9887; } }

@@ -7,8 +7,8 @@
   <meta name="theme-color" content="#f7f6f2">
   <meta name="description" content="Спроектируйте участок с парным памятником, цветниками, надгробными плитами и оградой в интерактивной 3D-сцене.">
   <title>Парный памятник · Конструктор</title>
-  <link rel="stylesheet" href="./style.css">
-  <link rel="modulepreload" href="./scene.js?v=2">
+  <link rel="stylesheet" href="./style.css?v=3">
+  <link rel="modulepreload" href="./scene.js?v=3">
 </head>
 <body>
   <header class="topbar">
@@ -110,6 +110,14 @@
           <button type="button" data-model="b20" aria-pressed="false"><img src="./assets/monuments/b20.webp" alt="" width="75" height="64"><span>Фигурная арка<small>B-20</small></span></button>
           <button type="button" data-model="b37" aria-pressed="false"><img src="./assets/monuments/b37.webp" alt="" width="75" height="64"><span>Боковой крест<small>B-37</small></span></button>
         </div>
+        <fieldset id="width-setting" class="width-setting" hidden>
+          <legend>Ширина стелы</legend>
+          <div class="plot-choices">
+            <button type="button" data-horizontal-width="100" aria-pressed="false">100 см <small>Каталожная</small></button>
+            <button type="button" data-horizontal-width="150" aria-pressed="true">150 см <small>По индивидуальному размеру</small></button>
+          </div>
+          <p id="width-context"></p>
+        </fieldset>
         <a id="model-reference" class="model-reference" target="_blank" rel="noopener noreferrer" hidden>Оригинал в каталоге Green Stone <span aria-hidden="true">↗</span></a>
       </section>
       <section class="setting-block material">
@@ -255,6 +263,6 @@
     <div class="dialog-actions"><a id="save-render" class="solid-action" download="Парный памятник.png">Скачать PNG</a></div>
   </dialog>
   <noscript>Для работы конструктора включите JavaScript.</noscript>
-  <script type="module" src="./ui.js?v=2"></script>
+  <script type="module" src="./ui.js?v=3"></script>
 </body>
 </html>

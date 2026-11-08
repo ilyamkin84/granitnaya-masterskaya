@@ -1,4 +1,4 @@
-import {BED_FILLS, DEFAULT_PLOT, PAVING_FINISHES, FENCE_OPTIONS, STONE_FENCES, hasBed, normalizePlot, getPlotLayout} from './plot-layout.js';
+import {BED_FILLS, DEFAULT_PLOT, PAVING_FINISHES, FENCE_OPTIONS, STONE_FENCES, hasBed, normalizePlot, getPlotLayout, monumentDimensions, coverBounds, outerFenceWidth} from './plot-layout.js?v=3';
 
 const $ = id => document.getElementById(id);
 const fields = ['surname', 'given', 'patronymic', 'birth', 'death'];
@@ -10,7 +10,7 @@ const initialPeople = {
 };
 const stones = ['black', 'gray', 'red', 'green'];
 const modelCodes = ['classic', 'b05', 'b20', 'b37'];
-const defaults = () => ({ model:'classic', plot: normalizePlot(DEFAULT_PLOT), environment:'cemetery', stone: 'black', people: structuredClone(initialPeople), photos: {left: null, right: null} });
+const defaults = () => ({ model:'classic', horizontalWidth:150, plot: normalizePlot(DEFAULT_PLOT), environment:'cemetery', stone: 'black', people: structuredClone(initialPeople), photos: {left: null, right: null} });
 let draftFillMigrated = false;
 
 function loadDraft() {
@@ -22,6 +22,7 @@ function loadDraft() {
     draftFillMigrated = sides.some(side => saved.plot?.[side+'Fill'] !== draft.plot[side+'Fill']);
     draft.environment=saved.environment==='studio'?'studio':'cemetery';
     if (modelCodes.includes(saved.model)) draft.model = saved.model;
+    if ([100,150].includes(saved.horizontalWidth)) draft.horizontalWidth = saved.horizontalWidth;
     if (stones.includes(saved.stone)) draft.stone = saved.stone;
     for (const side of sides) {
       for (const field of fields) {
@@ -61,6 +62,7 @@ const requestedFill = migratedFillLink ? 'marble' : BED_FILLS.includes(linkedFil
 if (migratedFillLink) syncEntryOption('bedFill', requestedFill);
 let graveSide = entry.get('side') === 'right' ? 'right' : 'left';
 const requestedModel = modelCodes.includes(entry.get('model')) ? entry.get('model') : null;
+const requestedWidth = ['100','150'].includes(entry.get('width')) ? Number(entry.get('width')) : null;
 const requestedStone = stones.includes(entry.get('stone')) ? entry.get('stone') : null;
 const requestedView = [...$('camera-select').options].find(option => option.value === entry.get('view'))?.value;
 const requestedPreset = plotPresets.get(entry.get('preset'));
@@ -80,7 +82,9 @@ let state = loadDraft();
 if(['studio','cemetery'].includes(entry.get('environment'))) state.environment=entry.get('environment');
 const oldStone = state.stone;
 const oldModel = state.model;
+const oldWidth = state.horizontalWidth;
 if (requestedModel) state.model = requestedModel;
+if (requestedWidth) state.horizontalWidth = requestedWidth;
 const oldPlot = JSON.stringify(state.plot);
 if (requestedPreset) {
   state.plot = {...requestedPreset};
@@ -97,7 +101,7 @@ if (requestedFill) {
 if (requestedFence) state.plot.fence = requestedFence;
 if (requestedPaving) state.plot.paving = requestedPaving;
 if (requestedSurface || requestedPaving) state.plot.surface = requestedSurface || 'paving';
-const entryChanged = oldModel !== state.model || oldStone !== state.stone || oldPlot !== JSON.stringify(state.plot);
+const entryChanged = oldModel !== state.model || oldWidth !== state.horizontalWidth || oldStone !== state.stone || oldPlot !== JSON.stringify(state.plot);
 let side = 'left';
 let view = requestedView || (holdWalkLink ? 'visit' : null) || (requestedFill ? 'planting' : startSection === 'monument' ? 'angle' : 'plot');
 let scene;
@@ -217,7 +221,17 @@ function showModel() {
   if (!reference.hidden) reference.href = 'https://www.green-stone.by/horizontal-monuments/b-' + state.model.slice(1);
   else reference.removeAttribute('href');
   const classic = state.model === 'classic';
-  $('walk-headstone').setAttribute('d', classic ? 'M-.79 -.11H.79V.23H-.79Z' : 'M-.5 -.04H.5V.04H.405V.125H-.405V.04H-.5Z');
+  $('width-setting').hidden = classic;
+  for (const button of document.querySelectorAll('[data-horizontal-width]')) {
+    button.setAttribute('aria-pressed', Number(button.dataset.horizontalWidth) === state.horizontalWidth);
+  }
+  const dims = monumentDimensions(state.model, state.horizontalWidth);
+  const half = dims.width / 2, foot = dims.baseWidth / 2;
+  const left = -half, back = dims.baseBack, front = dims.baseFront;
+  const band = dims.offsetZ + .025 * dims.scale;
+  const outline = classic ? `M${left} ${back}H${half}V${front}H${left}Z` :
+    `M${-foot} ${back}H${foot}V${2*dims.offsetZ-band}H${half}V${band}H${foot}V${front}H${-foot}V${band}H${left}V${2*dims.offsetZ-band}H${-foot}Z`;
+  $('walk-headstone').setAttribute('d', outline);
   $('tab-left').textContent = classic ? 'Левая стела' : 'Левая сторона';
   $('tab-right').textContent = classic ? 'Правая стела' : 'Правая сторона';
 }
@@ -228,7 +242,18 @@ for (const button of document.querySelectorAll('[data-model]')) {
     state.model = code;
     syncEntryOption('model', code, true);
     showModel();
-    apply('model', () => scene.setModel(code));
+    apply('model', () => scene.setModel(code, state.horizontalWidth));
+    changed();
+  });
+}
+for (const button of document.querySelectorAll('[data-horizontal-width]')) {
+  button.addEventListener('click', () => {
+    const width = Number(button.dataset.horizontalWidth);
+    if (width === state.horizontalWidth) return;
+    state.horizontalWidth = width;
+    syncEntryOption('width', String(width), true);
+    showModel();
+    apply('model', () => scene.setModel(state.model, width));
     changed();
   });
 }
@@ -356,7 +381,13 @@ function showPlot() {
     control.title=flowers?'Посмотреть наполнение цветника крупным планом':'Сначала добавьте цветник на участок';
   }
   if(!flowers&&view==='planting')setView('plot');
-  const {size, gateWidth} = getPlotLayout(plot);
+  const {size, gateWidth, instances} = getPlotLayout(plot, state.model, state.horizontalWidth);
+  const covers = coverBounds(instances), fence = outerFenceWidth(instances);
+  const cm = metres => (metres * 100).toLocaleString('ru-RU', {maximumFractionDigits:1}) + ' см';
+  const widths = [];
+  if (covers) widths.push((covers.places === 2 ? 'Два покрытия' : 'Покрытие') + ' — ' + cm(covers.right - covers.left));
+  if (fence) widths.push('Ограда снаружи — ' + cm(fence));
+  $('width-context').textContent = widths.join(' · ');
   $('plot-area').textContent = areaFormat.format(size[0] * size[1]) + ' м²';
   for (const button of document.querySelectorAll('[data-plot-key]')) {
     button.setAttribute('aria-pressed', plot[button.dataset.plotKey] === button.dataset.value);
@@ -630,6 +661,7 @@ $('confirm-reset').addEventListener('click', () => {
   syncEntryOption('side', null);
   syncEntryOption('bedFill', null);
   syncEntryOption('model', state.model);
+  syncEntryOption('width', null);
   syncEntryOption('stone', state.stone);
   syncEntryOption('size', state.plot.size);
   syncEntryOption('surface', state.plot.surface);
@@ -764,15 +796,17 @@ try {
   const preload = document.createElement('link');
   Object.assign(preload, {rel:'preload', as:'fetch', crossOrigin:'anonymous', href:'./assets/monuments/' + firstModel + '.glb'});
   document.head.append(preload);
-  const {mountScene} = await import('./scene.js?v=2');
-  const startModel = state.model, environment = state.environment;
+  const {mountScene} = await import('./scene.js?v=3');
+  const startModel = state.model, startWidth = state.horizontalWidth, environment = state.environment;
   const startView = view, startSide = graveSide;
   scene = await mountScene($('scene'), {
-    environment, startModel, startView, startSide, startPlot:state.plot, walkPad:$('walk-pad'),
+    environment, startModel, startWidth, startView, startSide, startPlot:state.plot, walkPad:$('walk-pad'),
     onWalkMove:drawWalkMap, onWalkExit:exitWalk, onError:showSceneError
   });
   const edits = [];
-  if (state.model !== startModel) edits.push(apply('model', () => scene.setModel(state.model)));
+  if (state.model !== startModel || state.horizontalWidth !== startWidth) {
+    edits.push(apply('model', () => scene.setModel(state.model, state.horizontalWidth)));
+  }
   if (state.environment !== environment) edits.push(apply('environment', () => scene.setEnvironment(state.environment)));
   if (view !== startView || graveSide !== startSide) scene.setView(view, graveSide);
   if (state.stone !== 'black') edits.push(apply('stone', () => scene.setStone(state.stone)));

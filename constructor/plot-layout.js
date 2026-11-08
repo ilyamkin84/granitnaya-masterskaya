@@ -7,6 +7,8 @@ const dimensions = {standard:[2.4,3], wide:[2.8,3.2], large:[3.2,3.6]};
 export const STONE_FENCES = Object.freeze(['fence-stone-plinth', 'fence-stone-wave', 'fence-stone-baluster']);
 export const FENCE_OPTIONS = Object.freeze(['none', 'fence-simple', 'fence-forged', ...STONE_FENCES]);
 const stonePostWidth = .168;
+const metalPostWidth = .078;
+const coverWidth = .66;
 const graveOptions = ['none','flower-rect','flower-round','slab-solid','slab-half','mixed'];
 export const BED_FILLS = Object.freeze(['marble', 'grass']);
 export const hasBed = shape => shape === 'mixed' || shape === 'flower-rect' || shape === 'flower-round';
@@ -31,10 +33,51 @@ export function normalizePlot(value) {
   };
 }
 
+// Finished dimensions of the unscaled GLBs, including the polished bevels.
+const horizontalShapes = Object.freeze({
+  b05: {width:1, height:.808798},
+  b20: {width:.9924462139606476, height:.810558},
+  b37: {width:.9946965277194977, height:.831}
+});
+
+export function monumentDimensions(model, horizontalWidth = 150) {
+  if (!Object.hasOwn(horizontalShapes, model)) {
+    return {model:'classic', scale:1, width:1.65, height:1.5997, offsetZ:0,
+      baseWidth:1.65, baseBack:-.186, baseFront:.314};
+  }
+  const shape = horizontalShapes[model];
+  const width = horizontalWidth === 100 ? 1 : 1.5;
+  const scale = width / shape.width;
+  // Keep the back of the base clear of the rear fence as the memorial grows towards the aisle.
+  const baseBack = -.1605;
+  const offsetZ = .1605 * (scale - 1);
+  return {model, scale, width, height:shape.height * scale, offsetZ,
+    baseWidth:.81 * scale, baseBack, baseFront:.1245 * scale + offsetZ};
+}
+
+export function coverBounds(instances) {
+  const covers = instances.filter(item => item.asset.startsWith('flower-') || item.asset.startsWith('slab-'));
+  if (!covers.length) return null;
+  return {
+    left:Math.min(...covers.map(i => i.x - coverWidth * i.sx / 2)),
+    right:Math.max(...covers.map(i => i.x + coverWidth * i.sx / 2)),
+    front:Math.max(...covers.map(i => i.z + (i.asset === 'slab-half' ? .285 : .57) * i.sz)),
+    places:new Set(covers.map(i => i.x)).size
+  };
+}
+
+export function outerFenceWidth(instances) {
+  const posts = instances.filter(i => i.asset.startsWith('post-'));
+  if (!posts.length) return null;
+  const cap = posts[0].asset.startsWith('post-stone-') ? stonePostWidth : metalPostWidth;
+  return Math.max(...posts.map(i => i.x)) - Math.min(...posts.map(i => i.x)) + cap;
+}
+
 // Coordinates are metres, +Z runs from the common plinth to the entrance.
 // All footprint centres and hinges are shared by the WebGL and Unreal renderers.
-export function getPlotLayout(value) {
+export function getPlotLayout(value, model = 'classic', horizontalWidth = 150) {
   const plot = normalizePlot(value);
+  const monument = monumentDimensions(model, horizontalWidth);
   const [width, depth] = dimensions[plot.size];
   const back = -.40, front = back + depth;
   const stoneFence = STONE_FENCES.includes(plot.fence);
@@ -44,7 +87,8 @@ export function getPlotLayout(value) {
   const gateWidth = .82;
   const gateHinge = right;
   const gateLatch = gateHinge - gateWidth - (stoneFence ? stonePostWidth : .05);
-  const head = .312;
+  // The glass pair has a recessed ledge. The horizontal models meet the base at a 4 mm joint.
+  const head = monument.model === 'classic' ? .312 : monument.baseFront + .004;
   const length = Math.min(1.80, frontPosts - head - gateWidth - .054);
   const instances = [];
   const round = n => Math.round(n * 100000) / 100000;
@@ -101,6 +145,6 @@ export function getPlotLayout(value) {
       boundaryPart('gate-'+style,gateHinge-.027,frontPosts,plot.gateOpen ? Math.PI*98/180 : Math.PI,gateWidth-.006);
     }
   }
-  return {size:[width,depth],groundCenterZ:round(back+depth/2),gateWidth,
+  return {monument,size:[width,depth],groundCenterZ:round(back+depth/2),gateWidth,
           surface:plot.surface,paving:plot.paving,instances};
 }
