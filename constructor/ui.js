@@ -759,23 +759,36 @@ setSection(startSection, false);
 setView(view);
 focusEntryControl();
 if (entryChanged || draftFillMigrated) changed();
-detectUnreal();
 try {
-  const { mountScene } = await import('./scene.js');
-  const initialEnvironment=state.environment;
-  scene = await mountScene($('scene'), {environment:initialEnvironment,startView:view,walkPad:$('walk-pad'),onWalkMove:drawWalkMap,onWalkExit:exitWalk,onReady: () => {}, onError: showSceneError});
-  if (!scene) throw new Error('Missing scene');
-  const jobs = [applyPlot()];
-  if(initialEnvironment!==state.environment)jobs.push(apply('environment',()=>scene.setEnvironment(state.environment)));
-  if (state.model !== 'classic') jobs.push(apply('model', () => scene.setModel(state.model)));
-  if (state.stone !== 'black') jobs.push(apply('stone', () => scene.setStone(state.stone)));
+  const firstModel = state.model;
+  const preload = document.createElement('link');
+  Object.assign(preload, {rel:'preload', as:'fetch', crossOrigin:'anonymous', href:'./assets/monuments/' + firstModel + '.glb'});
+  document.head.append(preload);
+  const {mountScene} = await import('./scene.js?v=2');
+  const startModel = state.model, environment = state.environment;
+  const startView = view, startSide = graveSide;
+  scene = await mountScene($('scene'), {
+    environment, startModel, startView, startSide, startPlot:state.plot, walkPad:$('walk-pad'),
+    onWalkMove:drawWalkMap, onWalkExit:exitWalk, onError:showSceneError
+  });
+  const edits = [];
+  if (state.model !== startModel) edits.push(apply('model', () => scene.setModel(state.model)));
+  if (state.environment !== environment) edits.push(apply('environment', () => scene.setEnvironment(state.environment)));
+  if (view !== startView || graveSide !== startSide) scene.setView(view, graveSide);
+  if (state.stone !== 'black') edits.push(apply('stone', () => scene.setStone(state.stone)));
   for (const which of sides) {
-    if (fields.some(field => state.people[which][field] !== initialPeople[which][field])) jobs.push(applyPerson(which));
-    if (state.photos[which]) jobs.push(applyPhoto(which));
+    if (fields.some(field => state.people[which][field] !== initialPeople[which][field])) edits.push(applyPerson(which));
+    if (state.photos[which]) edits.push(applyPhoto(which));
   }
-  await Promise.all(jobs);
-  setView(view);
-  $('scene-state').hidden = true;walkStart.disabled=false;
+  await Promise.all(edits);
+  $('scene-state').hidden = true;
+  // Give the browser a presentation frame before constructing the grounds.
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  applyPlot().catch(() => {});
+  scene.refineMonument().catch(error => console.warn('Детализация памятника:', error));
+  scene.loadEnvironment().catch(error => console.warn('Загрузка окружения:', error));
+  walkStart.disabled = false;
+  detectUnreal();
   updateRenderButton();
-  if(holdWalkLink)await enterWalk();
-} catch { showSceneError(); }
+  if (holdWalkLink) await enterWalk();
+} catch (error) { console.error(error); showSceneError(); }
