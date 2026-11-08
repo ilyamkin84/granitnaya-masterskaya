@@ -1,4 +1,4 @@
-import {DEFAULT_PLOT, getPlotLayout} from './constructor/plot-layout.js';
+import {DEFAULT_PLOT, getPlotLayout} from './constructor/plot-layout.js?v=4';
 
 document.documentElement.classList.remove('no-script');
 
@@ -116,10 +116,10 @@ function drawPlan() {
   c.strokeStyle='#93a28f';c.strokeRect(X(-width/2),Y(back),width*scale,depth*scale);
   for (const item of layout.instances) {
     if(item.asset.startsWith('flower-')||item.asset.startsWith('slab-')) {
-      const isFlower=item.asset.startsWith('flower-'), length=1.14*item.sz;
-      metric(item.x,item.z,.66,length,isFlower?'#b9c5ad':'#a0ad9e');
+      const isFlower=item.asset.startsWith('flower-'), length=(item.asset==='slab-half'?.57:1.14)*item.sz;
+      metric(item.x,item.z,.66*item.sx,length,isFlower?'#b9c5ad':'#a0ad9e');
       if(isFlower) {
-        const sx=X(item.x-.27),sy=Y(item.z-length/2+.06),sw=.54*scale,sh=(length-.12)*scale;
+        const sx=X(item.x-.27*item.sx),sy=Y(item.z-length/2+.06),sw=.54*item.sx*scale,sh=(length-.12)*scale;
         c.strokeStyle='#849780';c.strokeRect(sx,sy,sw,sh);
         for(let row=0;row<5;row++)for(let col=0;col<3;col++){
           const px=sx+sw*(col+.47)/3,py=sy+sh*(row+.45+(col%2)*.2)/5;
@@ -134,7 +134,8 @@ function drawPlan() {
       c.fillStyle='#46594c';c.fillRect(X(item.x)-1.9,Y(item.z)-1.9,3.8,3.8);
     }
   }
-  metric(0,.04,1.65,.45,'#9ba99c','#4b5c50');metric(-.34,-.026,.60,.125,'#516355');metric(.34,-.026,.60,.125,'#516355');
+  const headX=layout.memorialX;
+  metric(headX,.04,1.65,.45,'#9ba99c','#4b5c50');metric(headX-.34,-.026,.60,.125,'#516355');metric(headX+.34,-.026,.60,.125,'#516355');
   const gate=layout.instances.find(o=>o.asset.startsWith('gate-'));
   c.setLineDash([3,3]);c.lineWidth=.7;c.strokeStyle='#8b9c86';
   c.beginPath();c.moveTo(X(gate.x),Y(gate.z));c.lineTo(X(gate.x),Y(gate.z-gate.sx));c.stroke();

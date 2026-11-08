@@ -6,9 +6,20 @@ export const DEFAULT_PLOT = Object.freeze({
 const dimensions = {standard:[2.4,3], wide:[2.8,3.2], large:[3.2,3.6]};
 export const STONE_FENCES = Object.freeze(['fence-stone-plinth', 'fence-stone-wave', 'fence-stone-baluster']);
 export const FENCE_OPTIONS = Object.freeze(['none', 'fence-simple', 'fence-forged', ...STONE_FENCES]);
-const stonePostWidth = .168;
+const stonePostWidth = .130;
 const metalPostWidth = .078;
 const coverWidth = .66;
+const serviceAisle = .60;
+const coverSizes = {
+  standard: {width:.60, joint:.08, length:1.00},
+  wide: {width:.66, joint:.126, length:1.20},
+  large: {width:.66, joint:.126, length:1.56}
+};
+export const FENCE_HEIGHTS = Object.freeze({
+  'fence-simple':{post:.590,rail:.503}, 'fence-forged':{post:.649,rail:.596},
+  'fence-stone-plinth':{post:.23,rail:.11}, 'fence-stone-wave':{post:.23,rail:.21},
+  'fence-stone-baluster':{post:.35,rail:.11}
+});
 const graveOptions = ['none','flower-rect','flower-round','slab-solid','slab-half','mixed'];
 export const BED_FILLS = Object.freeze(['marble', 'grass']);
 export const hasBed = shape => shape === 'mixed' || shape === 'flower-rect' || shape === 'flower-round';
@@ -86,10 +97,20 @@ export function getPlotLayout(value, model = 'classic', horizontalWidth = 150) {
   const rearPosts = back + inset, frontPosts = front - inset;
   const gateWidth = .82;
   const gateHinge = right;
-  const gateLatch = gateHinge - gateWidth - (stoneFence ? stonePostWidth : .05);
+  const postWidth = stoneFence ? stonePostWidth : metalPostWidth;
+  const gateLatch = gateHinge - gateWidth - postWidth;
+  const sign = plot.entrance === 'left' ? -1 : 1;
+  const cover = coverSizes[plot.size];
+  const centers = (cover.width + cover.joint) / 2;
+  const pairEdge = centers + cover.width / 2;
+  const innerSide = plot.fence === 'none' ? width / 2 : right - postWidth / 2;
+  // Move the paired assembly together; neither portraits nor stones stretch sideways.
+  // Keep the entrance-side service aisle clear of the protruding post feet.
+  const memorialX = -sign * Math.max(0, serviceAisle - (innerSide - pairEdge));
+  monument.offsetX = memorialX;
   // The glass pair has a recessed ledge. The horizontal models meet the base at a 4 mm joint.
   const head = monument.model === 'classic' ? .312 : monument.baseFront + .004;
-  const length = Math.min(1.80, frontPosts - head - gateWidth - .054);
+  const length = cover.length;
   const instances = [];
   const round = n => Math.round(n * 100000) / 100000;
   function add(asset,x,z,angle=0,sx=1,sz=1) {
@@ -97,9 +118,9 @@ export function getPlotLayout(value, model = 'classic', horizontalWidth = 150) {
   }
   function covering(asset,x,start,extent) {
     const templateLength = asset === 'slab-half' ? .57 : 1.14;
-    add(asset,x,start+extent/2,0,1,extent/templateLength);
+    add(asset,x,start+extent/2,0,cover.width/coverWidth,extent/templateLength);
   }
-  for (const [side,x] of [['left',-.393],['right',.393]]) {
+  for (const [side,x] of [['left',memorialX-centers],['right',memorialX+centers]]) {
     const option = plot[side], fill = plot[side+'Fill'];
     const bedShape = option === 'mixed' ? 'flower-rect' : option;
     const bedAsset = bedShape+'-'+fill;
@@ -112,9 +133,21 @@ export function getPlotLayout(value, model = 'classic', horizontalWidth = 150) {
       covering(hasBed(option) ? bedAsset : option,x,head,option === 'slab-half' ? length/2 : length);
     }
   }
-  const entranceSign = plot.entrance === 'left' ? -1 : 1;
+  const entranceSign = sign;
   if (plot.bench) add('bench',entranceSign*(-width/2+.54),frontPosts-(stoneFence ? .28 : .25),Math.PI);
-  if (plot.vase) add('vase',plot.vaseSide === 'left' ? -.982 : .982,.12);
+  if (plot.vase) {
+    const vaseSign = plot.vaseSide === 'left' ? -1 : 1;
+    const headEdge = vaseSign*memorialX + Math.max(monument.width/2, pairEdge);
+    if (vaseSign !== entranceSign && innerSide-headEdge >= .21) {
+      add('vase',vaseSign*(headEdge+.105),.12);
+    } else {
+      // On the service side or against a close fence, the vase belongs at the foot
+      // of its selected grave, safely clear of both the route and the pedestal.
+      const piece = plot[plot.vaseSide];
+      const coveredLength = piece === 'none' ? 0 : piece === 'slab-half' ? length/2 : length;
+      add('vase',memorialX+vaseSign*centers,head+coveredLength+.11);
+    }
+  }
   if (plot.fence !== 'none') {
     const style = plot.fence.slice('fence-'.length);
     const posts = new Set();
@@ -142,9 +175,48 @@ export function getPlotLayout(value, model = 'classic', horizontalWidth = 150) {
     run(left,frontPosts,gateLatch,frontPosts);
     // The corner post carries the hinge. The leaf swings into the clear front approach.
     if (!stoneFence) {
-      boundaryPart('gate-'+style,gateHinge-.027,frontPosts,plot.gateOpen ? Math.PI*98/180 : Math.PI,gateWidth-.006);
+      // The hinge is just inside the corner post; the leaf opens against the side rail.
+      const hingeOffset=postWidth/2+.010;
+      boundaryPart('gate-'+style,gateHinge-hingeOffset,frontPosts,
+        plot.gateOpen ? Math.PI/2 : Math.PI, (gateWidth-.015)/.983);
     }
   }
-  return {monument,size:[width,depth],groundCenterZ:round(back+depth/2),gateWidth,
+  return {monument,memorialX,size:[width,depth],groundCenterZ:round(back+depth/2),gateWidth,
           surface:plot.surface,paving:plot.paving,instances};
+}
+
+// Measured to the innermost post foot (or paved edge). The path is for an open gate.
+export function getVisitRoute(layout, plot) {
+  plot = normalizePlot(plot);
+  const side = plot.entrance === 'left' ? -1 : 1;
+  const [width,depth] = layout.size;
+  const size = coverSizes[plot.size];
+  const posts = layout.instances.filter(i => i.asset.startsWith('post-'));
+  const front = layout.groundCenterZ + depth/2;
+  const innerHalf = posts.length
+    ? Math.max(...posts.map(i => side*i.x)) - (posts[0].asset.startsWith('post-stone-') ? stonePostWidth : metalPostWidth)/2
+    : width/2;
+  const covers = coverBounds(layout.instances);
+  const edge = covers ? (side === 1 ? covers.right : -covers.left) : side*layout.monument.offsetX;
+  const sideClearance = innerHalf - edge;
+  // A missing near-side covering leaves extra room; still approach the headstone.
+  const nominalEdge = side*layout.monument.offsetX + size.width + size.joint/2;
+  const aisleEdge = Math.max(edge,nominalEdge);
+  const aisleX = side * (aisleEdge + Math.min((innerHalf-aisleEdge)/2,.32));
+  const frontZ = posts.length ? Math.max(...posts.map(i => i.z)) : front;
+  const gatePosts = posts.filter(i => i.z === frontZ).sort((a,b) => side*(b.x-a.x));
+  const gateX = gatePosts.length ? (gatePosts[0].x+gatePosts[1].x)/2 : aisleX;
+  const postRadius = posts.length ? (posts[0].asset.startsWith('post-stone-') ? stonePostWidth : metalPostWidth)/2 : 0;
+  const clearFront = frontZ-postRadius;
+  const gate = {x:gateX,z:frontZ};
+  // A metal leaf folds into the plot. Pass its free end before turning towards
+  // the side aisle so a visitor's shoulders clear both the leaf and the slab.
+  const hasLeaf = layout.instances.some(i => i.asset.startsWith('gate-'));
+  const path = [
+    {x:gateX,z:frontZ+.40}, gate,
+    {x:gateX,z:frontZ-(hasLeaf ? .84 : .28)}, {x:aisleX,z:frontZ-(hasLeaf ? 1.08 : .82)},
+    {x:aisleX,z:layout.monument.baseFront+.28}
+  ];
+  return {gate,path,aisleX,sideClearance,frontClearance:clearFront-(covers?.front??layout.monument.baseFront),
+    coverLength:size.length, entryWidth:posts.length ? Math.abs(gatePosts[0].x-gatePosts[1].x)-2*postRadius : null};
 }

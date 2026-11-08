@@ -1,4 +1,4 @@
-import {BED_FILLS, DEFAULT_PLOT, PAVING_FINISHES, FENCE_OPTIONS, STONE_FENCES, hasBed, normalizePlot, getPlotLayout, monumentDimensions, coverBounds, outerFenceWidth} from './plot-layout.js?v=3';
+import {BED_FILLS, DEFAULT_PLOT, PAVING_FINISHES, FENCE_OPTIONS, FENCE_HEIGHTS, STONE_FENCES, hasBed, normalizePlot, getPlotLayout, getVisitRoute, monumentDimensions, coverBounds, outerFenceWidth} from './plot-layout.js?v=4';
 
 const $ = id => document.getElementById(id);
 const fields = ['surname', 'given', 'patronymic', 'birth', 'death'];
@@ -241,7 +241,7 @@ for (const button of document.querySelectorAll('[data-model]')) {
     if (state.model === code) return;
     state.model = code;
     syncEntryOption('model', code, true);
-    showModel();
+    showModel();showPlot();
     apply('model', () => scene.setModel(code, state.horizontalWidth));
     changed();
   });
@@ -252,7 +252,7 @@ for (const button of document.querySelectorAll('[data-horizontal-width]')) {
     if (width === state.horizontalWidth) return;
     state.horizontalWidth = width;
     syncEntryOption('width', String(width), true);
-    showModel();
+    showModel();showPlot();
     apply('model', () => scene.setModel(state.model, width));
     changed();
   });
@@ -381,13 +381,18 @@ function showPlot() {
     control.title=flowers?'Посмотреть наполнение цветника крупным планом':'Сначала добавьте цветник на участок';
   }
   if(!flowers&&view==='planting')setView('plot');
-  const {size, gateWidth, instances} = getPlotLayout(plot, state.model, state.horizontalWidth);
+  const layout = getPlotLayout(plot, state.model, state.horizontalWidth);
+  const {size, instances} = layout;
+  const route = getVisitRoute(layout,plot);
   const covers = coverBounds(instances), fence = outerFenceWidth(instances);
   const cm = metres => (metres * 100).toLocaleString('ru-RU', {maximumFractionDigits:1}) + ' см';
   const widths = [];
   if (covers) widths.push((covers.places === 2 ? 'Два покрытия' : 'Покрытие') + ' — ' + cm(covers.right - covers.left));
   if (fence) widths.push('Ограда снаружи — ' + cm(fence));
   $('width-context').textContent = widths.join(' · ');
+  $('walk-headstone').setAttribute('transform', 'translate('+layout.memorialX+' 0)');
+  $('passage-size').hidden = !covers;
+  if (covers) $('passage-size').textContent = 'Проход '+(plot.entrance==='left'?'слева':'справа')+' от покрытий — '+cm(route.sideClearance);
   $('plot-area').textContent = areaFormat.format(size[0] * size[1]) + ' м²';
   for (const button of document.querySelectorAll('[data-plot-key]')) {
     button.setAttribute('aria-pressed', plot[button.dataset.plotKey] === button.dataset.value);
@@ -395,7 +400,10 @@ function showPlot() {
   for (const input of document.querySelectorAll('[data-plot-check]')) {
     input.checked = plot[input.dataset.plotCheck];
   }
-  for (const which of sides) $('grave-summary-' + which).textContent = graveNames.get(plot[which]);
+  for (const which of sides) {
+    const kind = plot[which], length = kind === 'slab-half' ? route.coverLength / 2 : route.coverLength;
+    $('grave-summary-' + which).textContent = graveNames.get(kind) + (kind === 'none' ? '' : ' · '+cm(length));
+  }
   for (const button of document.querySelectorAll('[data-grave-side]')) {
     button.setAttribute('aria-pressed', button.dataset.graveSide === graveSide);
   }
@@ -417,7 +425,8 @@ function showPlot() {
   $('bench-position').textContent = plot.entrance === 'left'
     ? 'Скамейка в переднем правом углу.'
     : 'Скамейка в переднем левом углу.';
-  $('gate-size').textContent = 'Проём ' + Math.round(gateWidth * 100) + ' см';
+  const heights = FENCE_HEIGHTS[plot.fence];
+  $('gate-size').textContent = heights ? 'Между столбами '+cm(route.entryWidth)+' · высота столбов '+cm(heights.post)+' · верх секции '+cm(heights.rail) : '';
 }
 function applyPlot() {
   const plot = {...state.plot};
@@ -494,7 +503,7 @@ function drawWalkMap(pose,info){
     $('walk-gate-mark').setAttribute('d',info.gate?'M'+(info.gate.x-.41)+' '+info.gate.z+'h.82':'');
   }
   $('walk-person').setAttribute('transform','translate('+pose.x.toFixed(3)+' '+pose.z.toFixed(3)+') rotate('+(-pose.yaw*180/Math.PI).toFixed(1)+')');
-  const meters=Math.hypot(pose.x,pose.z).toFixed(1).replace('.',',')+' м';
+  const meters=Math.hypot(pose.x-info.layout.memorialX,pose.z-info.layout.monument.offsetZ).toFixed(1).replace('.',',')+' м';
   if($('walk-distance').textContent!==meters)$('walk-distance').textContent=meters;
   const near=info.gate&&!info.gate.fixed&&Math.hypot(pose.x-info.gate.x,pose.z-info.gate.z)<=1.8;
   if(walkGate.hidden===!!near)walkGate.hidden=!near;
@@ -796,7 +805,7 @@ try {
   const preload = document.createElement('link');
   Object.assign(preload, {rel:'preload', as:'fetch', crossOrigin:'anonymous', href:'./assets/monuments/' + firstModel + '.glb'});
   document.head.append(preload);
-  const {mountScene} = await import('./scene.js?v=3');
+  const {mountScene} = await import('./scene.js?v=4');
   const startModel = state.model, startWidth = state.horizontalWidth, environment = state.environment;
   const startView = view, startSide = graveSide;
   scene = await mountScene($('scene'), {
