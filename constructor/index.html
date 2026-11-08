@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" href="data:,">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f6f2">
+  <meta name="description" content="Спроектируйте участок с парным памятником, цветниками, надгробными плитами и оградой в интерактивной 3D-сцене.">
+  <title>Парный памятник · Конструктор</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="identity">
+      <span class="monogram" aria-hidden="true"><i></i><i></i></span>
+      <div class="title-block">
+        <a class="context home-link" href="../index.html">← На главную</a>
+        <h1>Парный памятник</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="save-state" id="save-state" role="status"></span>
+      <button type="button" class="quiet-action" id="reset" title="Вернуть исходные настройки">
+        <span aria-hidden="true" class="reset-symbol">↺</span> Сбросить
+      </button>
+    </div>
+  </header>
+  <main class="workspace">
+    <section class="viewer" aria-label="Интерактивный просмотр памятника и участка">
+      <div id="scene" tabindex="0" aria-label="3D-модель. Потяните мышью или пальцем, чтобы повернуть."></div>
+      <div class="scene-state" id="scene-state" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="scene-message">Загрузка модели…</span>
+        <button id="scene-retry" type="button" class="outline-action" hidden>Повторить</button>
+      </div>
+      <div class="environment-tools" role="group" aria-label="Окружение">
+        <button type="button" data-environment="cemetery" aria-pressed="true">Кладбище</button>
+        <button type="button" data-environment="studio" aria-pressed="false">Студия</button>
+      </div>
+      <div class="render-tools" id="render-tools" hidden>
+        <button id="unreal" class="glass-action" type="button" disabled>Рендер в Unreal</button>
+        <span id="render-message" role="status" hidden></span>
+      </div>
+      <button type="button" id="walk-start" class="walk-launch" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="14" cy="4.2" r="1.6"/><path d="m6 13 2.6-3.5 3.5-2 2.5 1.3 1.6 3.7 3 .8M12.8 8l-1.6 6 3.3 3.3.8 4M11 14.1l-2 4-3.2 3"/></svg>Пройти по аллее
+      </button>
+      <section id="walk-hud" aria-label="Прогулка по кладбищу" hidden>
+        <div class="walk-orientation">
+          <button type="button" id="walk-map-toggle" aria-label="Свернуть схему" aria-controls="walk-map-wrap" aria-expanded="true"><span class="walk-dot"></span>Прогулка<span class="walk-fold" aria-hidden="true"></span></button>
+          <div id="walk-map-wrap">
+            <svg id="walk-map" viewBox="-11.6 -8 23.2 17.6" role="img" aria-label="Схема аллеи: участок выделен, стрелка показывает ваше положение и направление взгляда">
+              <rect x="-13" y="-12" width="26" height="24" fill="#e6e7dd"/>
+              <path d="M-13 4.45h26" stroke="#fffdf6" stroke-width="2.3"/>
+              <path d="M-13 -2.2h26M-13 -6.9h26M9.5 -9v20" stroke="#faf9f1" stroke-width="1.0"/>
+              <g id="walk-neighbours" fill="#c9ccbd" stroke="#b3b8a8" stroke-width=".09"></g>
+              <rect id="walk-plot-shape" rx=".07" fill="#91a08a" stroke="#526a51" stroke-width=".14"/>
+              <path id="walk-headstone" d="M-.79 -.11H.79V.23H-.79Z" fill="#334632"/>
+              <path id="walk-gate-mark" stroke="#f9f5df" stroke-width=".27" />
+              <g id="walk-person"><path d="M0,-1.27L.67,.58 0,.31 -.67,.58Z" fill="#174e50" stroke="white" stroke-linejoin="round" stroke-width=".22"/></g>
+            </svg>
+            <div class="walk-distance"><span>До памятника</span><output id="walk-distance" aria-live="off">—</output></div>
+          </div>
+        </div>
+        <button id="walk-exit" type="button" class="walk-exit"><span aria-hidden="true">←</span> В конструктор</button>
+        <div class="walk-motion">
+          <div id="walk-pad" tabindex="0" role="group" aria-label="Джойстик ходьбы. Потяните в нужную сторону. С клавиатуры используйте WASD или стрелки."><i class="north"></i><i class="east"></i><i class="south"></i><i class="west"></i><b data-walk-knob></b></div>
+          <p class="walk-hint"><span class="walk-desktop"><b>W A S D</b> — ходьба<br>Обзор — мышью или стрелками ← →</span><span class="walk-touch">Джойстик — ходьба<br>Свайп по сцене — обзор</span></p>
+        </div>
+        <div class="walk-actions">
+          <div id="walk-notice" class="walk-notice" role="status" hidden></div>
+          <button type="button" id="walk-gate" class="walk-gate" hidden>Открыть калитку</button>
+          <div class="walk-places" role="group" aria-label="Перейти к ориентиру"><button type="button" id="walk-return">На аллею</button><button type="button" id="walk-at-gate">К калитке</button></div>
+        </div>
+      </section>
+      <div class="view-controls" aria-label="Управление камерой">
+        <div class="switcher views" role="group" aria-label="Ракурс">
+          <button type="button" data-view="plot" aria-pressed="true">Участок</button>
+          <button type="button" data-view="visit" aria-pressed="false">С аллеи</button>
+          <button type="button" data-view="top" aria-pressed="false">Сверху</button>
+          <button type="button" data-view="front" aria-pressed="false">Спереди</button>
+          <button type="button" data-view="angle" aria-pressed="false">Под углом</button>
+          <button type="button" data-view="planting" aria-pressed="false">Цветник</button>
+          <button type="button" data-view="detail" aria-pressed="false">Фактура</button>
+        </div>
+        <label class="view-picker">Ракурс
+          <select id="camera-select" aria-label="Ракурс">
+            <option value="plot">Участок</option><option value="visit">С аллеи</option><option value="top">Сверху</option>
+            <option value="front">Спереди</option><option value="angle">Под углом</option><option value="planting">Цветник</option><option value="detail">Фактура</option>
+          </select>
+        </label>
+        <div class="switcher tools" role="group" aria-label="Масштаб и размер просмотра">
+          <button type="button" id="zoom-out" aria-label="Отдалить" title="Отдалить">−</button>
+          <button type="button" id="zoom-in" aria-label="Приблизить" title="Приблизить">+</button>
+          <button type="button" id="expand" aria-label="Развернуть просмотр" title="Развернуть просмотр" aria-pressed="false"><span class="expand-icon" aria-hidden="true"></span></button>
+        </div>
+      </div>
+    </section>
+    <aside class="settings" aria-label="Настройки проекта">
+      <div class="section-nav" role="tablist" aria-label="Раздел настроек">
+        <button type="button" role="tab" id="section-monument" data-section="monument" aria-selected="false" aria-controls="monument-panel" tabindex="-1">Памятник</button>
+        <button type="button" role="tab" id="section-plot" data-section="plot" aria-selected="true" aria-controls="plot-panel">Участок</button>
+      </div>
+      <div id="monument-panel" role="tabpanel" aria-labelledby="section-monument" hidden>
+      <section class="setting-block model-setting">
+        <h2 id="model-title">Форма памятника</h2>
+        <div class="model-choices" role="group" aria-labelledby="model-title">
+          <button type="button" data-model="classic" aria-pressed="true"><img src="./assets/monuments/classic.webp" alt="" width="75" height="64"><span>Парные стелы<small>Со стеклом</small></span></button>
+          <button type="button" data-model="b05" aria-pressed="false"><img src="./assets/monuments/b05.webp" alt="" width="75" height="64"><span>Двойная волна<small>B-05</small></span></button>
+          <button type="button" data-model="b20" aria-pressed="false"><img src="./assets/monuments/b20.webp" alt="" width="75" height="64"><span>Фигурная арка<small>B-20</small></span></button>
+          <button type="button" data-model="b37" aria-pressed="false"><img src="./assets/monuments/b37.webp" alt="" width="75" height="64"><span>Боковой крест<small>B-37</small></span></button>
+        </div>
+        <a id="model-reference" class="model-reference" target="_blank" rel="noopener noreferrer" hidden>Оригинал в каталоге Green Stone <span aria-hidden="true">↗</span></a>
+      </section>
+      <section class="setting-block material">
+        <h2>Материал</h2>
+        <div class="swatches" role="group" aria-label="Материал камня">
+          <button type="button" class="swatch" data-stone="black" aria-pressed="true" aria-label="Чёрный габбро">
+            <span class="sample"><img src="./assets/swatch-black.jpg" alt=""></span><span>Габбро</span>
+          </button>
+          <button type="button" class="swatch" data-stone="gray" aria-pressed="false" aria-label="Серый гранит">
+            <span class="sample"><img src="./assets/swatch-gray.jpg" alt=""></span><span>Серый</span>
+          </button>
+          <button type="button" class="swatch" data-stone="red" aria-pressed="false" aria-label="Красный гранит">
+            <span class="sample"><img src="./assets/swatch-red.jpg" alt=""></span><span>Красный</span>
+          </button>
+          <button type="button" class="swatch" data-stone="green" aria-pressed="false" aria-label="Зелёный гранит">
+            <span class="sample"><img src="./assets/swatch-green.jpg" alt=""></span><span>Зелёный</span>
+          </button>
+        </div>
+      </section>
+      <section class="setting-block personal">
+        <h2>Персонализация</h2>
+        <div class="sides" role="tablist" aria-label="Редактируемая сторона памятника">
+          <button type="button" role="tab" id="tab-left" data-side="left" aria-selected="true" aria-controls="person">Левая стела</button>
+          <button type="button" role="tab" id="tab-right" data-side="right" aria-selected="false" aria-controls="person" tabindex="-1">Правая стела</button>
+        </div>
+        <div role="tabpanel" id="person" aria-labelledby="tab-left">
+          <div class="fields">
+            <label class="wide">Фамилия<input type="text" id="surname" name="surname" maxlength="54" autocomplete="off" value="Васильев"></label>
+            <label>Имя<input type="text" id="given" name="given" maxlength="54" autocomplete="off" value="Михаил"></label>
+            <label>Отчество<input type="text" id="patronymic" name="patronymic" maxlength="54" autocomplete="off" value="Сергеевич"></label>
+            <label>Дата рождения<input type="text" id="birth" name="birth" placeholder="ДД.ММ.ГГГГ" maxlength="10" autocomplete="off" value="08.05.1970"></label>
+            <label>Дата смерти<input type="text" id="death" name="death" placeholder="ДД.ММ.ГГГГ" maxlength="10" autocomplete="off" value="11.04.2022"></label>
+          </div>
+          <div class="portrait-row">
+            <img id="photo-preview" width="57" height="71" src="./assets/portrait-left.jpg" alt="Портрет на левой стеле">
+            <div class="photo-actions">
+              <h3>Портрет</h3>
+              <button type="button" class="outline-action" id="choose-photo">Заменить фото</button>
+              <button type="button" class="text-action" id="restore-photo" hidden>Вернуть исходное</button>
+            </div>
+            <input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp,image/avif" hidden>
+          </div>
+          <p id="photo-message" class="small-message" role="status" hidden></p>
+          <p class="privacy" id="privacy" hidden>При рендере в Unreal фото и надписи передаются серверу рендера.</p>
+        </div>
+      </section>
+      </div>
+      <div id="plot-panel" role="tabpanel" aria-labelledby="section-plot">
+        <section class="setting-block plot-section">
+          <div class="section-heading"><h2>Размер участка</h2><output id="plot-area" aria-label="Площадь участка">8,96 м²</output></div>
+          <div class="plot-choices sizes" role="group" aria-label="Размер участка">
+            <button type="button" data-plot-key="size" data-value="standard" aria-pressed="false">2,4 × 3,0 м</button>
+            <button type="button" data-plot-key="size" data-value="wide" aria-pressed="true">2,8 × 3,2 м</button>
+            <button type="button" data-plot-key="size" data-value="large" aria-pressed="false">3,2 × 3,6 м</button>
+          </div>
+        </section>
+        <section class="setting-block plot-section">
+          <h2>Оформление могил</h2>
+          <div class="grave-sides" role="group" aria-label="Могила для редактирования">
+            <button type="button" data-grave-side="left" aria-pressed="true"><strong>Левая могила</strong><span id="grave-summary-left">Прямой цветник</span></button>
+            <button type="button" data-grave-side="right" aria-pressed="false"><strong>Правая могила</strong><span id="grave-summary-right">Сплошная плита</span></button>
+          </div>
+          <div class="grave-options" role="group" id="grave-options" aria-label="Оформление левой могилы">
+            <button type="button" data-grave="none" aria-pressed="false"><i class="plan-icon no-grave" aria-hidden="true"></i><span>Без оформления</span></button>
+            <button type="button" data-grave="flower-rect" aria-pressed="true"><i class="plan-icon flower-rect" aria-hidden="true"></i><span>Прямой цветник</span></button>
+            <button type="button" data-grave="flower-round" aria-pressed="false"><i class="plan-icon flower-round" aria-hidden="true"></i><span>Скруглённый цветник</span></button>
+            <button type="button" data-grave="slab-solid" aria-pressed="false"><i class="plan-icon slab-solid" aria-hidden="true"></i><span>Сплошная плита</span></button>
+            <button type="button" data-grave="slab-half" aria-pressed="false"><i class="plan-icon slab-half" aria-hidden="true"></i><span>Половинная плита</span></button>
+            <button type="button" data-grave="mixed" aria-pressed="false"><i class="plan-icon mixed" aria-hidden="true"></i><span>Плита и цветник</span></button>
+          </div>
+          <div id="bed-fill-setting" class="bed-fill-setting">
+            <h3 id="bed-fill-label">Наполнение цветника</h3>
+            <div id="bed-fill-options" class="bed-fill-options" role="group" aria-labelledby="bed-fill-label"></div>
+            <a id="bed-fill-reference" target="_blank" rel="noopener noreferrer" hidden>Посмотреть фото примера <span aria-hidden="true">↗</span></a>
+          </div>
+        </section>
+        <section class="setting-block plot-section plot-finishes">
+          <h2>Благоустройство</h2>
+          <h3>Покрытие</h3>
+          <div class="plot-choices surfaces" role="group" aria-label="Покрытие участка">
+            <button type="button" data-plot-key="surface" data-value="gravel" aria-pressed="false"><i class="surface-chip gravel" aria-hidden="true"></i>Щебень</button>
+            <button type="button" data-plot-key="surface" data-value="paving" aria-pressed="true"><i class="surface-chip paving" aria-hidden="true"></i>Плитка</button>
+            <button type="button" data-plot-key="surface" data-value="grass" aria-pressed="false"><i class="surface-chip grass" aria-hidden="true"></i>Газон</button>
+          </div>
+          <div id="paving-setting" class="paving-setting">
+            <div class="paving-heading">
+              <h3 id="paving-label">Отделка плитки</h3>
+              <span id="paving-finish" aria-live="polite"></span>
+            </div>
+            <div id="paving-options" class="paving-options" role="group" aria-labelledby="paving-label"></div>
+          </div>
+          <h3>Ограда</h3>
+          <div class="plot-choices" role="group" aria-label="Тип ограды">
+            <button type="button" data-plot-key="fence" data-value="none" aria-pressed="false">Без ограды</button>
+            <button type="button" data-plot-key="fence" data-value="fence-simple" aria-pressed="false">Простая</button>
+            <button type="button" data-plot-key="fence" data-value="fence-forged" aria-pressed="true">Кованая</button>
+          </div>
+          <h4 class="fence-material-title">Гранитные ограды</h4>
+          <div class="plot-choices fence-stone-choices" role="group" aria-label="Гранитные ограды">
+            <button type="button" data-plot-key="fence" data-value="fence-stone-plinth" data-fence-reference="ГО-17" data-source="https://www.green-stone.by/granite-grave-fences/1794" aria-pressed="false"><img src="./assets/plot/swatch-fence-stone-plinth.webp" width="400" height="220" alt=""><span>Прямая</span></button>
+            <button type="button" data-plot-key="fence" data-value="fence-stone-wave" data-fence-reference="ГО-20" data-source="https://www.green-stone.by/granite-grave-fences/1797" aria-pressed="false"><img src="./assets/plot/swatch-fence-stone-wave.webp" width="400" height="220" alt=""><span>Волна</span></button>
+            <button type="button" data-plot-key="fence" data-value="fence-stone-baluster" data-fence-reference="ГО-19" data-source="https://www.green-stone.by/granite-grave-fences/1796" aria-pressed="false"><img src="./assets/plot/swatch-fence-stone-baluster.webp" width="400" height="220" alt=""><span>С шарами</span></button>
+          </div>
+          <div class="placement" id="entrance-setting">
+            <h3>Расположение входа</h3>
+            <div class="plot-choices placement-choices" role="group" aria-label="Расположение входа">
+              <button type="button" data-plot-key="entrance" data-value="left" aria-pressed="false">Вход слева</button>
+              <button type="button" data-plot-key="entrance" data-value="right" aria-pressed="true">Вход справа</button>
+            </div>
+          </div>
+          <div class="gate-setting" id="gate-setting">
+            <label class="toggle"><input type="checkbox" id="gate-open" data-plot-check="gateOpen"><span aria-hidden="true"></span>Открыть калитку</label>
+            <a class="stone-fence-source" id="stone-fence-source" href="https://www.green-stone.by/granite-grave-fences" target="_blank" rel="noopener noreferrer" hidden>Образец</a>
+            <span class="gate-size" id="gate-size">Проём 82 см</span>
+          </div>
+          <div class="plot-accessories">
+            <label class="toggle"><input type="checkbox" id="plot-vase" data-plot-check="vase"><span aria-hidden="true"></span>Ваза</label>
+            <label class="toggle"><input type="checkbox" id="plot-bench" data-plot-check="bench"><span aria-hidden="true"></span>Скамейка</label>
+          </div>
+          <p id="bench-position" class="placement-note" hidden></p>
+          <div class="placement" id="vase-setting" hidden>
+            <h3>Положение вазы</h3>
+            <div class="plot-choices placement-choices" role="group" aria-label="Положение вазы">
+              <button type="button" data-plot-key="vaseSide" data-value="left" aria-pressed="true">У левой стелы</button>
+              <button type="button" data-plot-key="vaseSide" data-value="right" aria-pressed="false">У правой стелы</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </main>
+  <dialog id="reset-dialog" class="dialog confirm-dialog" aria-labelledby="reset-title">
+    <h2 id="reset-title">Сбросить настройки?</h2>
+    <p>Вернутся исходные параметры участка, материал, надписи и портреты обеих стел.</p>
+    <div class="dialog-actions">
+      <button class="outline-action" type="button" id="keep" autofocus>Отмена</button>
+      <button class="solid-action" type="button" id="confirm-reset">Сбросить</button>
+    </div>
+  </dialog>
+  <dialog id="render-dialog" class="dialog image-dialog" aria-labelledby="render-title">
+    <div class="dialog-head"><h2 id="render-title">Рендер в Unreal</h2><button class="quiet-action" type="button" id="close-render" aria-label="Закрыть">Закрыть</button></div>
+    <img id="render-image" alt="Парный памятник с выбранными камнем, надписями и портретами">
+    <div class="dialog-actions"><a id="save-render" class="solid-action" download="Парный памятник.png">Скачать PNG</a></div>
+  </dialog>
+  <noscript>Для работы конструктора включите JavaScript.</noscript>
+  <script type="module" src="./ui.js"></script>
+</body>
+</html>
