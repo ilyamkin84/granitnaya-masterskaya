@@ -7,8 +7,8 @@
   <meta name="theme-color" content="#f7f6f2">
   <meta name="description" content="Спроектируйте участок с парным памятником, цветниками, надгробными плитами и оградой в интерактивной 3D-сцене.">
   <title>Парный памятник · Конструктор</title>
-  <link rel="stylesheet" href="./style.css?v=3">
-  <link rel="modulepreload" href="./scene.js?v=3">
+  <link rel="stylesheet" href="./style.css?v=4">
+  <link rel="modulepreload" href="./scene.js?v=4">
 </head>
 <body>
   <header class="topbar">
@@ -173,6 +173,7 @@
             <button type="button" data-plot-key="size" data-value="wide" aria-pressed="true">2,8 × 3,2 м</button>
             <button type="button" data-plot-key="size" data-value="large" aria-pressed="false">3,2 × 3,6 м</button>
           </div>
+          <p class="passage-size" id="passage-size"></p>
         </section>
         <section class="setting-block plot-section">
           <h2>Оформление могил</h2>
@@ -217,9 +218,9 @@
           </div>
           <h4 class="fence-material-title">Гранитные ограды</h4>
           <div class="plot-choices fence-stone-choices" role="group" aria-label="Гранитные ограды">
-            <button type="button" data-plot-key="fence" data-value="fence-stone-plinth" data-fence-reference="ГО-17" data-source="https://www.green-stone.by/granite-grave-fences/1794" aria-pressed="false"><img src="./assets/plot/swatch-fence-stone-plinth.webp" width="400" height="220" alt=""><span>Прямая</span></button>
-            <button type="button" data-plot-key="fence" data-value="fence-stone-wave" data-fence-reference="ГО-20" data-source="https://www.green-stone.by/granite-grave-fences/1797" aria-pressed="false"><img src="./assets/plot/swatch-fence-stone-wave.webp" width="400" height="220" alt=""><span>Волна</span></button>
-            <button type="button" data-plot-key="fence" data-value="fence-stone-baluster" data-fence-reference="ГО-19" data-source="https://www.green-stone.by/granite-grave-fences/1796" aria-pressed="false"><img src="./assets/plot/swatch-fence-stone-baluster.webp" width="400" height="220" alt=""><span>С шарами</span></button>
+            <button type="button" data-plot-key="fence" data-value="fence-stone-plinth" data-fence-reference="ГО-17" data-source="https://www.green-stone.by/granite-grave-fences/1794" aria-pressed="false"><img src="./assets/plot/swatch-fence-stone-plinth.webp?v=4" width="400" height="220" alt=""><span>Прямая</span></button>
+            <button type="button" data-plot-key="fence" data-value="fence-stone-wave" data-fence-reference="ГО-20" data-source="https://www.green-stone.by/granite-grave-fences/1797" aria-pressed="false"><img src="./assets/plot/swatch-fence-stone-wave.webp?v=4" width="400" height="220" alt=""><span>Волна</span></button>
+            <button type="button" data-plot-key="fence" data-value="fence-stone-baluster" data-fence-reference="ГО-19" data-source="https://www.green-stone.by/granite-grave-fences/1796" aria-pressed="false"><img src="./assets/plot/swatch-fence-stone-baluster.webp?v=4" width="400" height="220" alt=""><span>С шарами</span></button>
           </div>
           <div class="placement" id="entrance-setting">
             <h3>Расположение входа</h3>
@@ -241,8 +242,8 @@
           <div class="placement" id="vase-setting" hidden>
             <h3>Положение вазы</h3>
             <div class="plot-choices placement-choices" role="group" aria-label="Положение вазы">
-              <button type="button" data-plot-key="vaseSide" data-value="left" aria-pressed="true">У левой стелы</button>
-              <button type="button" data-plot-key="vaseSide" data-value="right" aria-pressed="false">У правой стелы</button>
+              <button type="button" data-plot-key="vaseSide" data-value="left" aria-pressed="true">У левой могилы</button>
+              <button type="button" data-plot-key="vaseSide" data-value="right" aria-pressed="false">У правой могилы</button>
             </div>
           </div>
         </section>
@@ -263,6 +264,6 @@
     <div class="dialog-actions"><a id="save-render" class="solid-action" download="Парный памятник.png">Скачать PNG</a></div>
   </dialog>
   <noscript>Для работы конструктора включите JavaScript.</noscript>
-  <script type="module" src="./ui.js?v=3"></script>
+  <script type="module" src="./ui.js?v=4"></script>
 </body>
 </html>
