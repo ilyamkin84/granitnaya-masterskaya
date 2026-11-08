@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#464544">
+  <title>Памятник из чёрного гранита · 3D</title>
+  <style>
+    :root { font: 15px/1.4 system-ui, sans-serif; color: #25241f; color-scheme: light; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: #c6c3be; }
+    main { width: 100%; height: 100vh; height: 100dvh; min-height: 180px; display: flex; flex-direction: column; }
+    .stage { position: relative; width: 100%; flex: 1; min-height: 0; overflow: hidden; isolation: isolate;
+      background: linear-gradient(180deg,#424242 0%,#454545 32%,#535250 57%,#817e79 73%,#b5b2ac 84%,#c6c3be 100%); }
+    .home-link { position:absolute; z-index:4; top:max(14px,env(safe-area-inset-top)); left:max(14px,env(safe-area-inset-left)); display:inline-flex; align-items:center; min-height:44px; padding:3px 15px; border-radius:24px; color:#272621; background:rgba(246,244,238,.95); font-size:.87rem; text-decoration:none; }
+    .home-link:hover, .home-link:focus-visible { text-decoration:underline; text-underline-offset:.2em; }
+    .poster, model-viewer { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+    .poster { z-index: 2; display: grid; place-items: center; pointer-events: none; overflow: hidden; }
+    .poster img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
+    model-viewer { --poster-color: transparent; --progress-bar-height: 0; }
+    model-viewer:focus-within { outline: 2px solid #b19866; outline-offset: -3px; }
+    .bar { z-index: 3; min-height: 66px; padding: 6px max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+      display: flex; justify-content: center; align-items: center; gap: 15px; background: #c6c3be; }
+    button, .download { font: inherit; font-weight: 550; min-height: 44px; border: 0; touch-action: manipulation; }
+    button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .open { display: inline-flex; align-items: center; gap: 9px; padding: 10px 19px; border-radius: 99px;
+      background: #2c2b27; color: #fff; }
+    button:disabled { cursor: progress; }
+    svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .toolbar { display: inline-flex; gap: 2px; align-items: center; border: 1px solid #a9a69e; border-radius: 24px;
+      padding-inline: 2px; background: #e8e6e1; }
+    .icon { width: 44px; padding: 0; display: grid; place-items: center; border-radius: 50%; background: transparent; color: #272621; }
+    button.detail { border: 1px solid #a9a69e; border-radius: 25px; background: #e8e6e1; color: #272621; padding: 6px 16px; }
+    .hint, .status, .download { font-size: .87rem; }
+    .download { align-content: center; color: inherit; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    :focus-visible { outline: 3px solid #76500f; outline-offset: 3px; }
+    @media (hover: hover) { .open:hover { background: #171713; } .icon:hover { background: #d5d2cb; } }
+    @media (max-width: 560px) {
+      .bar { gap: 8px; min-height: 61px; }
+      .hint { display: none; }
+      .status { max-width: 45vw; font-size: .78rem; }
+    }
+    @media (max-height: 360px) { .bar { min-height: 48px; padding-block: 2px; } }
+  </style>
+</head>
+<body>
+  <main aria-label="Трёхмерная модель памятника из чёрного гранита">
+    <div class="stage" id="stage">
+      <a class="home-link" href="../index.html">← На главную</a>
+      <div class="poster" id="poster">
+        <img src="./poster.webp?v=granite2" width="1030" height="1150" fetchpriority="high"
+             alt="Памятник из полированного чёрного гранита. Четыре точёные колонны, свод с куполом и крестом, две вазы с белыми розами.">
+      </div>
+    </div>
+    <div class="bar">
+      <button class="open" id="open" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 8.4 4.7v9L12 21.2l-8.4-4.7v-9zM3.8 7.6l8.2 4.6 8.2-4.6M12 12.2v9"/></svg>
+        <span>Открыть в 3D</span>
+      </button>
+      <button type="button" class="detail" id="stone" hidden>Фактура камня</button>
+      <span class="hint" id="hint" hidden>Потяните, чтобы повернуть</span>
+      <div class="toolbar" id="tools" role="group" aria-label="Управление видом" hidden>
+        <button class="icon" type="button" id="zoom-out" aria-label="Отдалить" title="Отдалить"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/></svg></button>
+        <button class="icon" type="button" id="zoom-in" aria-label="Приблизить" title="Приблизить"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12"/></svg></button>
+        <button class="icon" type="button" id="home" aria-label="Исходный ракурс" title="Исходный ракурс"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5v5h5M4.6 9a8 8 0 1 1-.2 5"/></svg></button>
+      </div>
+      <span class="sr" id="notice" role="status" aria-live="polite"></span>
+      <a class="download" href="./memorial.glb" download hidden id="download">Скачать GLB</a>
+      <noscript>Для просмотра в 3D включите JavaScript.</noscript>
+    </div>
+  </main>
+  <script type="module">
+    const element = id => document.getElementById(id);
+    const button = element('open');
+    const label = button.querySelector('span');
+    const notice = element('notice');
+    const orbit = '12.7deg 82.5deg 92%';
+    let viewer;
+    let closeUp = false;
+    const startWithStone = new URLSearchParams(location.search).get('view') === 'stone';
+
+    function frameStone(detail) {
+      if (!viewer) return;
+      closeUp = detail;
+      viewer.cameraTarget = detail ? '0.343m 0.272m 0.332m' : '0m 1.2m 0m';
+      viewer.cameraOrbit = detail ? '23deg 71deg 0.73m' : orbit;
+      viewer.fieldOfView = detail ? '26deg' : '20deg';
+      // Wheel and drag update the internal camera without changing its attribute.
+      for (const prop of ['cameraTarget', 'cameraOrbit', 'fieldOfView']) viewer.requestUpdate(prop);
+      element('stone').textContent = detail ? 'Общий вид' : 'Фактура камня';
+    }
+
+    function showError(message) {
+      if (viewer) viewer.remove();
+      viewer = null;
+      element('poster').hidden = false;
+      element('tools').hidden = true;
+      element('stone').hidden = true;
+      element('hint').hidden = true;
+      element('download').hidden = false;
+      button.hidden = false;
+      button.disabled = false;
+      label.textContent = 'Повторить';
+      notice.className = 'status';
+      notice.textContent = message;
+    }
+
+    async function openModel() {
+      button.disabled = true;
+      label.textContent = 'Загрузка…';
+      element('download').hidden = true;
+      notice.className = 'sr';
+      notice.textContent = 'Загружаем трёхмерную модель.';
+      if (location.protocol === 'file:') {
+        showError('Откройте страницу через веб-сервер.');
+        return;
+      }
+      try {
+        await import('./vendor/model-viewer.min.js');
+        const model = document.createElement('model-viewer');
+        viewer = model;
+        const settings = {
+          'alt': 'Памятник с куполом и крестом. Поворачивайте модель движением пальца, мышью или стрелками на клавиатуре.',
+          'camera-controls': '', 'disable-pan': '', 'disable-tap': '', 'interaction-prompt': 'none',
+          'touch-action': 'pan-y', 'camera-target': '0m 1.2m 0m', 'camera-orbit': orbit,
+          'min-camera-orbit': 'auto 5deg 0.27m', 'max-camera-orbit': 'auto 90deg 160%',
+          'field-of-view': '20deg', 'min-field-of-view': '12deg', 'max-field-of-view': '32deg',
+          'environment-image': './studio.hdr', 'tone-mapping': 'neutral', 'exposure': '1.05',
+          'shadow-intensity': '0.7', 'shadow-softness': '0.85', 'loading': 'eager'
+        };
+        for (const [name, value] of Object.entries(settings)) model.setAttribute(name, value);
+        model.addEventListener('error', () => {
+          if (model === viewer) showError('Не удалось показать модель. Проверьте сеть и поддержку WebGL.');
+        });
+        model.addEventListener('progress', event => {
+          if (model === viewer && button.disabled) {
+            label.textContent = 'Загрузка ' + Math.round(event.detail.totalProgress * 100) + '%';
+          }
+        });
+        model.addEventListener('load', () => {
+          if (model !== viewer) return;
+          element('poster').hidden = true;
+          button.hidden = true;
+          element('tools').hidden = false;
+          element('stone').hidden = false;
+          frameStone(startWithStone);
+          element('hint').hidden = false;
+          notice.textContent = 'Модель готова. Для вращения используйте стрелки на клавиатуре.';
+          model.focus({preventScroll: true});
+        }, {once: true});
+        model.src = './memorial.glb?v=granite2';
+        element('stage').prepend(model);
+      } catch {
+        showError('Не удалось загрузить просмотрщик.');
+      }
+    }
+
+    button.addEventListener('click', openModel);
+    element('zoom-in').addEventListener('click', () => viewer?.zoom(3));
+    element('zoom-out').addEventListener('click', () => viewer?.zoom(-3));
+    element('home').addEventListener('click', () => frameStone(false));
+    element('stone').addEventListener('click', () => frameStone(!closeUp));
+    if (startWithStone) openModel();
+  </script>
+</body>
+</html>
