@@ -1,4 +1,4 @@
-import {BED_FILLS, DEFAULT_PLOT, PAVING_FINISHES, FENCE_OPTIONS, FENCE_HEIGHTS, STONE_FENCES, hasBed, normalizePlot, getPlotLayout, getVisitRoute, monumentDimensions, coverBounds, outerFenceWidth} from './plot-layout.js?v=4';
+import {BED_FILLS, DEFAULT_PLOT, PAVING_FINISHES, FENCE_OPTIONS, FENCE_HEIGHTS, STONE_FENCES, hasBed, normalizePlot, getPlotLayout, getVisitRoute, monumentDimensions, coverBounds, outerFenceWidth} from './plot-layout.js?v=5dd3f0ac4fa4';
 
 const $ = id => document.getElementById(id);
 const fields = ['surname', 'given', 'patronymic', 'birth', 'death'];
@@ -9,7 +9,7 @@ const initialPeople = {
   right: { surname: 'Васильева', given: 'Марина', patronymic: 'Сергеевна', birth: '27.09.1972', death: '21.12.2019' }
 };
 const stones = ['black', 'gray', 'red', 'green'];
-const modelCodes = ['classic', 'b05', 'b20', 'b37'];
+const modelCodes = ['classic', 'b05', 'b20', 'b37', 'relief10'];
 const defaults = () => ({ model:'classic', horizontalWidth:150, plot: normalizePlot(DEFAULT_PLOT), environment:'cemetery', stone: 'black', people: structuredClone(initialPeople), photos: {left: null, right: null} });
 let draftFillMigrated = false;
 
@@ -60,7 +60,9 @@ const linkedFill = entry.get('bedFill');
 const migratedFillLink = linkedFill === 'flowers' || linkedFill === 'mixed';
 const requestedFill = migratedFillLink ? 'marble' : BED_FILLS.includes(linkedFill) ? linkedFill : null;
 if (migratedFillLink) syncEntryOption('bedFill', requestedFill);
-let graveSide = entry.get('side') === 'right' ? 'right' : 'left';
+const draft = loadDraft();
+const initialModel = modelCodes.includes(entry.get('model')) ? entry.get('model') : draft.model;
+let graveSide = initialModel !== 'relief10' && entry.get('side') === 'right' ? 'right' : 'left';
 const requestedModel = modelCodes.includes(entry.get('model')) ? entry.get('model') : null;
 const requestedWidth = ['100','150'].includes(entry.get('width')) ? Number(entry.get('width')) : null;
 const requestedStone = stones.includes(entry.get('stone')) ? entry.get('stone') : null;
@@ -78,7 +80,7 @@ else if (requestedView) startSection = ['plot','top','visit','planting'].include
 else if (requestedPaving || requestedSurface) startSection = 'plot';
 else if ((requestedStone || requestedModel) && !requestedSize) startSection = 'monument';
 
-let state = loadDraft();
+let state = draft;
 if(['studio','cemetery'].includes(entry.get('environment'))) state.environment=entry.get('environment');
 const oldStone = state.stone;
 const oldModel = state.model;
@@ -212,26 +214,48 @@ for (const field of fields) {
   });
 }
 
+const pageHeading = document.querySelector('header h1');
+const defaultHeading = pageHeading.textContent;
+const defaultTitle = document.title;
 function showModel() {
+  const relief = state.model === 'relief10';
+  document.body.classList.toggle('relief-model', relief);
+  pageHeading.textContent = relief ? 'Стела с барельефом солдата' : defaultHeading;
+  document.title = relief ? pageHeading.textContent+' · Конструктор' : defaultTitle;
+  document.querySelector('.setting-block.personal').hidden = relief;
+  if (relief && graveSide !== 'left') {
+    graveSide = 'left';
+    syncEntryOption('side',null);
+  }
+  updateRenderButton();
   for (const button of document.querySelectorAll('[data-model]')) {
     button.setAttribute('aria-pressed', button.dataset.model === state.model);
   }
   const reference = $('model-reference');
   reference.hidden = state.model === 'classic';
+  if (relief) reference.hidden = true;
   if (!reference.hidden) reference.href = 'https://www.green-stone.by/horizontal-monuments/b-' + state.model.slice(1);
   else reference.removeAttribute('href');
   const classic = state.model === 'classic';
   $('width-setting').hidden = classic;
+  if (relief) $('width-setting').hidden = true;
   for (const button of document.querySelectorAll('[data-horizontal-width]')) {
     button.setAttribute('aria-pressed', Number(button.dataset.horizontalWidth) === state.horizontalWidth);
   }
   const dims = monumentDimensions(state.model, state.horizontalWidth);
+  const measure = $('relief-measure');
+  measure.hidden = !relief;
+  if (relief) {
+    const cm = m => (m*100).toLocaleString('ru-RU',{maximumFractionDigits:1});
+    measure.textContent = [dims.width,dims.height,dims.baseFront-dims.baseBack].map(cm).join(' × ')+' см (ширина × высота × глубина)';
+  }
   const half = dims.width / 2, foot = dims.baseWidth / 2;
   const left = -half, back = dims.baseBack, front = dims.baseFront;
   const band = dims.offsetZ + .025 * dims.scale;
   const outline = classic ? `M${left} ${back}H${half}V${front}H${left}Z` :
     `M${-foot} ${back}H${foot}V${2*dims.offsetZ-band}H${half}V${band}H${foot}V${front}H${-foot}V${band}H${left}V${2*dims.offsetZ-band}H${-foot}Z`;
   $('walk-headstone').setAttribute('d', outline);
+  if (relief) $('walk-headstone').setAttribute('d', `M${left} ${back}H${half}V${front}H${left}Z`);
   $('tab-left').textContent = classic ? 'Левая стела' : 'Левая сторона';
   $('tab-right').textContent = classic ? 'Правая стела' : 'Правая сторона';
 }
@@ -241,6 +265,7 @@ for (const button of document.querySelectorAll('[data-model]')) {
     if (state.model === code) return;
     state.model = code;
     syncEntryOption('model', code, true);
+    if (code === 'relief10') {syncEntryOption('width',null);syncEntryOption('edit',null);}
     showModel();showPlot();
     apply('model', () => scene.setModel(code, state.horizontalWidth));
     changed();
@@ -267,7 +292,7 @@ document.querySelectorAll('[data-stone]').forEach(button => {
     state.stone = button.dataset.stone;
     const id = state.stone;
     syncEntryOption('preset', null);
-    syncEntryOption('stone', id);
+    syncEntryOption('stone', id, true);
     showStone();
     apply('stone', () => scene.setStone(id));
     changed();
@@ -361,9 +386,16 @@ for (const finish of PAVING_FINISHES) {
   $('paving-options').append(button);
 }
 const areaFormat = new Intl.NumberFormat('ru-RU', {maximumFractionDigits:2});
-function hasFlowerbed(plot){return hasBed(plot.left)||hasBed(plot.right);}
+function hasFlowerbed(plot){if(state.model==='relief10')return hasBed(plot.left);return hasBed(plot.left)||hasBed(plot.right);}
 function showPlot() {
   const plot = state.plot;
+  const relief = state.model === 'relief10';
+  document.querySelector('[data-grave-side="right"]').hidden = relief;
+  document.querySelector('[data-grave-side="left"] strong').textContent = relief ? 'По центру участка' : 'Левая могила';
+  for(const button of document.querySelectorAll('[data-plot-key="vaseSide"]')){
+    const left = button.dataset.value === 'left';
+    button.textContent = relief ? (left ? 'Слева от могилы' : 'Справа от могилы') : (left ? 'У левой могилы' : 'У правой могилы');
+  }
   $('paving-setting').hidden = plot.surface !== 'paving';
   $('paving-finish').textContent = pavingSamples[plot.paving][1];
   const fill = plot[graveSide+'Fill'];
@@ -694,10 +726,11 @@ $('confirm-reset').addEventListener('click', () => {
 });
 
 function updateRenderButton() {
-  $('unreal').hidden = !unrealAvailable && !rendering;
-  $('render-tools').hidden = $('unreal').hidden && $('render-message').hidden;
-  $('privacy').hidden = !unrealAvailable && !rendering;
-  $('unreal').disabled = !scene || rendering || !unrealAvailable;
+  const browserOnly = state.model === 'relief10';
+  $('unreal').hidden = browserOnly || (!unrealAvailable && !rendering);
+  $('render-tools').hidden = browserOnly || $('unreal').hidden && $('render-message').hidden;
+  $('privacy').hidden = browserOnly || (!unrealAvailable && !rendering);
+  $('unreal').disabled = browserOnly || !scene || rendering || !unrealAvailable;
 }
 let statusEndpoint = 'unknown';
 let checkingStatus = false;
@@ -734,7 +767,7 @@ document.addEventListener('visibilitychange', () => {
 
 // An explicit render request sends the current photo and engraving to Unreal.
 $('unreal').addEventListener('click', async () => {
-  if (!scene || !unrealAvailable || rendering) return;
+  if (!scene || !unrealAvailable || rendering || state.model === 'relief10') return;
   rendering = true;
   const version = resetVersion;
   $('render-message').textContent = 'Рендерим в Unreal…';
@@ -743,9 +776,10 @@ $('unreal').addEventListener('click', async () => {
   try {
     await Promise.all(Object.values(photoJobs));
     await Promise.all([...operations.values()].map(job => job.promise));
+    if (state.model === 'relief10') { $('render-message').hidden = true; return; }
     const result = await scene.renderUnreal();
     if (!result?.url) throw new Error('Missing render');
-    if (version !== resetVersion) {
+    if (version !== resetVersion || state.model === 'relief10') {
       URL.revokeObjectURL(result.url);
       $('render-message').hidden = true;
       return;
@@ -772,7 +806,7 @@ $('render-dialog').addEventListener('close', () => {
 
 function focusEntryControl() {
   let control;
-  if (requestedEdit) control = requestedEdit === 'photo' ? $('choose-photo') : $('surname');
+  if (requestedEdit && state.model !== 'relief10') control = requestedEdit === 'photo' ? $('choose-photo') : $('surname');
   else if (requestedFill && startSection === 'plot') control = document.querySelector('[data-bed-fill="'+requestedFill+'"]');
   else if (requestedPiece && !requestedPreset) {
     if (sides.includes(pieceField)) control = document.querySelector('[data-grave="' + requestedPiece + '"]');
@@ -805,7 +839,7 @@ try {
   const preload = document.createElement('link');
   Object.assign(preload, {rel:'preload', as:'fetch', crossOrigin:'anonymous', href:'./assets/monuments/' + firstModel + '.glb'});
   document.head.append(preload);
-  const {mountScene} = await import('./scene.js?v=4');
+  const {mountScene} = await import('./scene.js?v=5dd3f0ac4fa4');
   const startModel = state.model, startWidth = state.horizontalWidth, environment = state.environment;
   const startView = view, startSide = graveSide;
   scene = await mountScene($('scene'), {

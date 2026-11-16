@@ -52,6 +52,12 @@ const horizontalShapes = Object.freeze({
 });
 
 export function monumentDimensions(model, horizontalWidth = 150) {
+  if (model === 'relief10') {
+    const width = .60353, height = 1.29812, depth = .18334;
+    const baseBack = -.1605, baseFront = baseBack + depth;
+    return {model, single:true, scale:1, width, height, offsetZ:baseBack + depth/2,
+      baseWidth:width, baseBack, baseFront, bodyBack:baseBack, bodyFront:baseFront};
+  }
   if (!Object.hasOwn(horizontalShapes, model)) {
     return {model:'classic', scale:1, width:1.65, height:1.5997, offsetZ:0,
       baseWidth:1.65, baseBack:-.186, baseFront:.314};
@@ -102,11 +108,12 @@ export function getPlotLayout(value, model = 'classic', horizontalWidth = 150) {
   const sign = plot.entrance === 'left' ? -1 : 1;
   const cover = coverSizes[plot.size];
   const centers = (cover.width + cover.joint) / 2;
-  const pairEdge = centers + cover.width / 2;
+  const coverEdge = monument.single ? cover.width / 2 : centers + cover.width / 2;
+  const serviceEdge = monument.single ? Math.max(coverEdge, monument.width / 2) : coverEdge;
   const innerSide = plot.fence === 'none' ? width / 2 : right - postWidth / 2;
   // Move the paired assembly together; neither portraits nor stones stretch sideways.
   // Keep the entrance-side service aisle clear of the protruding post feet.
-  const memorialX = -sign * Math.max(0, serviceAisle - (innerSide - pairEdge));
+  const memorialX = -sign * Math.max(0, serviceAisle - (innerSide - serviceEdge));
   monument.offsetX = memorialX;
   // The glass pair has a recessed ledge. The horizontal models meet the base at a 4 mm joint.
   const head = monument.model === 'classic' ? .312 : monument.baseFront + .004;
@@ -120,7 +127,11 @@ export function getPlotLayout(value, model = 'classic', horizontalWidth = 150) {
     const templateLength = asset === 'slab-half' ? .57 : 1.14;
     add(asset,x,start+extent/2,0,cover.width/coverWidth,extent/templateLength);
   }
-  for (const [side,x] of [['left',memorialX-centers],['right',memorialX+centers]]) {
+  // A single grave reads its editable left slot and leaves the other stored slot intact.
+  const places = monument.single
+    ? [['left', memorialX]]
+    : [['left', memorialX - centers], ['right', memorialX + centers]];
+  for (const [side,x] of places) {
     const option = plot[side], fill = plot[side+'Fill'];
     const bedShape = option === 'mixed' ? 'flower-rect' : option;
     const bedAsset = bedShape+'-'+fill;
@@ -137,15 +148,16 @@ export function getPlotLayout(value, model = 'classic', horizontalWidth = 150) {
   if (plot.bench) add('bench',entranceSign*(-width/2+.54),frontPosts-(stoneFence ? .28 : .25),Math.PI);
   if (plot.vase) {
     const vaseSign = plot.vaseSide === 'left' ? -1 : 1;
-    const headEdge = vaseSign*memorialX + Math.max(monument.width/2, pairEdge);
+    const headEdge = vaseSign*memorialX + Math.max(monument.width/2, coverEdge);
     if (vaseSign !== entranceSign && innerSide-headEdge >= .21) {
       add('vase',vaseSign*(headEdge+.105),.12);
     } else {
       // On the service side or against a close fence, the vase belongs at the foot
       // of its selected grave, safely clear of both the route and the pedestal.
-      const piece = plot[plot.vaseSide];
+      const piece = monument.single ? plot.left : plot[plot.vaseSide];
       const coveredLength = piece === 'none' ? 0 : piece === 'slab-half' ? length/2 : length;
-      add('vase',memorialX+vaseSign*centers,head+coveredLength+.11);
+      const rad = .09;
+      add('vase',memorialX+vaseSign*(monument.single ? cover.width/2-rad-.015 : centers),head+coveredLength+rad+.02);
     }
   }
   if (plot.fence !== 'none') {
@@ -200,7 +212,10 @@ export function getVisitRoute(layout, plot) {
   const edge = covers ? (side === 1 ? covers.right : -covers.left) : side*layout.monument.offsetX;
   const sideClearance = innerHalf - edge;
   // A missing near-side covering leaves extra room; still approach the headstone.
-  const nominalEdge = side*layout.monument.offsetX + size.width + size.joint/2;
+  const approachHalfWidth = layout.monument.single
+    ? Math.max(size.width / 2, layout.monument.width / 2)
+    : size.width + size.joint / 2;
+  const nominalEdge = side * layout.monument.offsetX + approachHalfWidth;
   const aisleEdge = Math.max(edge,nominalEdge);
   const aisleX = side * (aisleEdge + Math.min((innerHalf-aisleEdge)/2,.32));
   const frontZ = posts.length ? Math.max(...posts.map(i => i.z)) : front;

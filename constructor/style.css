@@ -302,3 +302,5 @@ body.walking #scene canvas:focus-visible {outline:none}
 .width-setting p { margin:6px 0 0; font-size:.74rem; line-height:1.4; color:var(--muted); }
 .width-setting p:empty { display:none; }
 @media (hover:hover) { .model-choices button:hover { border-color:#8f9887; } }
+
+.relief-model .grave-sides { grid-template-columns:1fr; }
