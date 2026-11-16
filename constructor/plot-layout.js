@@ -4,7 +4,7 @@ export const DEFAULT_PLOT = Object.freeze({
 });
 
 export function monumentAssetName(code) {
-  return code === 'relief10' ? 'relief10.glb?v=2' : code + '.glb';
+  return code === 'relief10' ? 'relief10.glb?v=3' : code + '.glb';
 }
 
 const dimensions = {standard:[2.4,3], wide:[2.8,3.2], large:[3.2,3.6]};

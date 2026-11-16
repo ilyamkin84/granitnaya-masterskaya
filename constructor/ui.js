@@ -1,4 +1,4 @@
-import {BED_FILLS, DEFAULT_PLOT, PAVING_FINISHES, FENCE_OPTIONS, FENCE_HEIGHTS, STONE_FENCES, hasBed, normalizePlot, getPlotLayout, getVisitRoute, monumentDimensions, monumentAssetName, coverBounds, outerFenceWidth} from './plot-layout.js?v=7c1017dd8f7d';
+import {BED_FILLS, DEFAULT_PLOT, PAVING_FINISHES, FENCE_OPTIONS, FENCE_HEIGHTS, STONE_FENCES, hasBed, normalizePlot, getPlotLayout, getVisitRoute, monumentDimensions, monumentAssetName, coverBounds, outerFenceWidth} from './plot-layout.js?v=19597a91916e';
 
 const $ = id => document.getElementById(id);
 const fields = ['surname', 'given', 'patronymic', 'birth', 'death'];
@@ -839,7 +839,7 @@ try {
   const preload = document.createElement('link');
   Object.assign(preload, {rel:'preload', as:'fetch', crossOrigin:'anonymous', href:'./assets/monuments/' + monumentAssetName(firstModel)});
   document.head.append(preload);
-  const {mountScene} = await import('./scene.js?v=7c1017dd8f7d');
+  const {mountScene} = await import('./scene.js?v=19597a91916e');
   const startModel = state.model, startWidth = state.horizontalWidth, environment = state.environment;
   const startView = view, startSide = graveSide;
   scene = await mountScene($('scene'), {
