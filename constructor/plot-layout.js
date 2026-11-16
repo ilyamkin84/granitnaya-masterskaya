@@ -3,6 +3,10 @@ export const DEFAULT_PLOT = Object.freeze({
   leftFill:'marble', rightFill:'marble', surface:'paving', paving:'black', bench:false, vase:false, gateOpen:false, entrance:'right', vaseSide:'left'
 });
 
+export function monumentAssetName(code) {
+  return code === 'relief10' ? 'relief10.glb?v=2' : code + '.glb';
+}
+
 const dimensions = {standard:[2.4,3], wide:[2.8,3.2], large:[3.2,3.6]};
 export const STONE_FENCES = Object.freeze(['fence-stone-plinth', 'fence-stone-wave', 'fence-stone-baluster']);
 export const FENCE_OPTIONS = Object.freeze(['none', 'fence-simple', 'fence-forged', ...STONE_FENCES]);
